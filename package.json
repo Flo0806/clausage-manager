@@ -16,14 +16,20 @@
     "format": "oxfmt src/"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@vueuse/core": "^15.0.0",
     "pinia": "^4.0.3",
     "vue": "^3.5.42",
+    "vue-i18n": "^11.4.12",
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.136",
     "@tsconfig/node24": "^24.0.5",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^24.13.4",
+    "@unocss/reset": "66.10.5",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/eslint-plugin": "^1.6.27",
     "@vue/eslint-config-typescript": "^14.9.0",
@@ -39,6 +45,7 @@
     "oxfmt": "^0.67.0",
     "oxlint": "~1.82.0",
     "typescript": "~6.0.0",
+    "unocss": "^66.10.5",
     "vite": "^8.2.2",
     "vite-plugin-vue-devtools": "^8.2.1",
     "vitest": "^4.1.11",

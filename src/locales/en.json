@@ -1,0 +1,11 @@
+{
+  "app": {
+    "title": "Clausage Manager"
+  },
+  "theme": {
+    "label": "Color scheme: {mode} (click to change)",
+    "auto": "System",
+    "light": "Light",
+    "dark": "Dark"
+  }
+}
