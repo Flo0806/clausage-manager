@@ -77,6 +77,31 @@ export interface Fetching {
   word?: string
 }
 
+// Which side the USB cable leaves; display, touch and camera turn by 180 degrees
+export type Rotation = 'usb_left' | 'usb_right'
+
+// Stored on the device, survive a restart
+export interface DeviceSettings {
+  brightness: number // display brightness in %, 5..100
+  rotation: Rotation
+  active_s: number // seconds between requests while active, 60..21600
+  saving_s: number // seconds between requests while saving, 60..21600
+  idle_polls: number // answers without change until saving, 1..100
+  min_interval_s: number // the hard limit, read only
+}
+
+export interface SettingsReply {
+  id: number
+  ok: boolean
+  settings?: DeviceSettings
+  error?:
+    | 'invalid_brightness'
+    | 'invalid_rotation'
+    | 'invalid_interval'
+    | 'invalid_idle_polls'
+    | (string & {})
+}
+
 interface InfoReply extends DeviceInfo {
   id: number
   ok: boolean
@@ -216,6 +241,16 @@ export function useDevice() {
   // The device gets UTC from NTP; this tells it the local time zone (there is no event for it)
   const setTimezone = sendTimezone
 
+  // Not part of "info" and there is no event: only the settings card needs them
+  function getSettings() {
+    return request<SettingsReply>('settings.get')
+  }
+
+  // Takes any of the fields; the device checks all first, so one bad value changes nothing
+  function setSettings(changes: Partial<Omit<DeviceSettings, 'min_interval_s'>>) {
+    return request<SettingsReply>('settings.set', changes)
+  }
+
   return {
     info: readonly(info),
     wifi: readonly(wifi),
@@ -230,5 +265,7 @@ export function useDevice() {
     setToken,
     clearToken,
     setTimezone,
+    getSettings,
+    setSettings,
   }
 }

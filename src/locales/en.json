@@ -99,6 +99,31 @@
         "storage_failed": "The device could not store the time zone.",
         "unknown": "The device answered with an error."
       }
+    },
+    "display": {
+      "title": "Display & polling",
+      "noDevice": "Connect your device to load these settings.",
+      "brightness": "Brightness",
+      "polling": "How often the device asks Claude",
+      "activeLabel": "Interval while active (minutes)",
+      "savingLabel": "Interval while saving (minutes)",
+      "idleLabel": "Answers without change until saving",
+      "minutesRange": "1 to 360 minutes",
+      "idleRange": "1 to 100",
+      "idleHint": "After about {minutes} minutes without change the device switches to saving.",
+      "limitHint": "Every request counts against your Claude limit. The device never asks more often than every {seconds} seconds, that is fixed.",
+      "save": "Save",
+      "defaults": "Defaults",
+      "errors": {
+        "invalid_brightness": "Brightness must be between 5 and 100 %.",
+        "invalid_interval": "Intervals must be between 1 minute and 6 hours.",
+        "invalid_idle_polls": "The number must be between 1 and 100.",
+        "unknown": "The device answered with an error.",
+        "invalid_rotation": "Unknown orientation."
+      },
+      "rotation": "Where does the USB cable come out?",
+      "usb_left": "USB on the left",
+      "usb_right": "USB on the right"
     }
   },
   "nav": {

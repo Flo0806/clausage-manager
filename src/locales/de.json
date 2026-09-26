@@ -99,6 +99,31 @@
         "storage_failed": "Das Gerät konnte die Zeitzone nicht speichern.",
         "unknown": "Das Gerät hat mit einem Fehler geantwortet."
       }
+    },
+    "display": {
+      "title": "Display & Abfragen",
+      "noDevice": "Verbinde dein Gerät, um diese Einstellungen zu laden.",
+      "brightness": "Helligkeit",
+      "polling": "Wie oft das Gerät Claude fragt",
+      "activeLabel": "Abstand im aktiven Modus (Minuten)",
+      "savingLabel": "Abstand im Sparmodus (Minuten)",
+      "idleLabel": "Antworten ohne Änderung bis zum Sparmodus",
+      "minutesRange": "1 bis 360 Minuten",
+      "idleRange": "1 bis 100",
+      "idleHint": "Nach etwa {minutes} Minuten ohne Änderung wechselt das Gerät in den Sparmodus.",
+      "limitHint": "Jede Anfrage zählt gegen dein Claude-Limit. Das Gerät fragt nie öfter als alle {seconds} Sekunden, das ist fest eingestellt.",
+      "save": "Speichern",
+      "defaults": "Standardwerte",
+      "errors": {
+        "invalid_brightness": "Die Helligkeit muss zwischen 5 und 100 % liegen.",
+        "invalid_interval": "Die Abstände müssen zwischen 1 Minute und 6 Stunden liegen.",
+        "invalid_idle_polls": "Die Anzahl muss zwischen 1 und 100 liegen.",
+        "unknown": "Das Gerät hat mit einem Fehler geantwortet.",
+        "invalid_rotation": "Unbekannte Ausrichtung."
+      },
+      "rotation": "Wo kommt das USB-Kabel raus?",
+      "usb_left": "USB links",
+      "usb_right": "USB rechts"
     }
   },
   "nav": {
