@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSerial } from '@/composables/serial.ts'
 import { useDevice } from '@/composables/device.ts'
@@ -57,6 +57,11 @@ const { info, wifi, token, sayHello } = useDevice()
 
 const busy = ref(false)
 const error = ref<string>()
+
+// Auto-connect happens without a click, so an old connection error must go away by itself
+watch(connected, (isConnected) => {
+  if (isConnected) error.value = undefined
+})
 
 async function run(action: () => Promise<void>) {
   busy.value = true

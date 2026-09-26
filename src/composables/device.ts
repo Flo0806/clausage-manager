@@ -34,6 +34,13 @@ export interface DeviceInfo {
   board: string
 }
 
+export interface TokenReply {
+  id: number
+  ok: boolean
+  token?: TokenStatus
+  error?: 'invalid_token' | 'storage_failed' | (string & {})
+}
+
 interface InfoReply extends DeviceInfo {
   id: number
   ok: boolean
@@ -103,6 +110,20 @@ export function useDevice() {
     return reply
   }
 
+  // The reply only says "unchecked"; the result of the check follows as "token" event
+  // (only once Wi-Fi is up)
+  async function setToken(value: string) {
+    const reply = await request<TokenReply>('token.set', { token: value })
+    if (reply?.ok && reply.token) token.value = reply.token
+    return reply
+  }
+
+  async function clearToken() {
+    const reply = await request<TokenReply>('token.clear')
+    if (reply?.ok && reply.token) token.value = reply.token
+    return reply
+  }
+
   return {
     info: readonly(info),
     wifi: readonly(wifi),
@@ -110,5 +131,7 @@ export function useDevice() {
     sayHello,
     setWifi,
     clearWifi,
+    setToken,
+    clearToken,
   }
 }

@@ -12,7 +12,7 @@ watchEffect(() => {
 
 <template>
   <TheHeader />
-  <main class="mx-auto max-w-lg p-6 flex flex-col gap-6">
+  <main class="mx-auto max-w-xl p-6 flex flex-col gap-6">
     <RouterView />
   </main>
 </template>

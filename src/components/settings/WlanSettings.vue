@@ -70,7 +70,7 @@ import QrcodeVue from 'qrcode.vue'
 import BaseInput from '../ui/BaseInput.vue'
 import FormGroup from '../ui/FormGroup.vue'
 
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseCard from '../ui/BaseCard.vue'
 import { useSerial } from '@/composables/serial.ts'
@@ -107,6 +107,11 @@ function errorText(code?: string) {
 
 const busy = ref(false)
 const error = ref<string>()
+
+// Auto-connect happens without a click, so an old connection error must go away by itself
+watch(connected, (isConnected) => {
+  if (isConnected) error.value = undefined
+})
 
 async function run(command: () => Promise<WifiReply | undefined>) {
   busy.value = true

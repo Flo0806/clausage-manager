@@ -13,7 +13,27 @@
       "title": "Claude",
       "label": "Claude Token",
       "error": "Please enter a token",
-      "placeholder": "In the terminal: claude setup-token"
+      "placeholder": "In the terminal: claude setup-token",
+      "save": "Save token",
+      "clear": "Delete token",
+      "needsWifi": "Without Wi-Fi the device can't check the token. It will be checked as soon as Wi-Fi is connected.",
+      "status": {
+        "unknown": "Token status unknown",
+        "not_configured": "No token set up",
+        "unchecked": "Token saved, not checked yet",
+        "valid": "Token valid",
+        "invalid": "Token invalid, rejected by Claude"
+      },
+      "problem": {
+        "unreachable": "Claude not reachable",
+        "server_error": "Claude reports an error",
+        "no_usage": "answer without usage data"
+      },
+      "errors": {
+        "invalid_token": "The token is empty or too long (at most 255 characters).",
+        "storage_failed": "The device could not store the token.",
+        "unknown": "The device answered with an error."
+      }
     },
     "wlan": {
       "title": "WiFi",
