@@ -1,7 +1,7 @@
 <template>
   <BaseCard>
     <div class="grid grid-cols-6">
-      <h2 class="text-2xl font-bold mb-2">{{ $t('settings.hello.title') }}</h2>
+      <h2 class="text-2xl font-bold mb-2 col-span-6">{{ $t('settings.hello.title') }}</h2>
 
       <div class="col-span-6 flex flex-col gap-4">
         <div>
@@ -26,7 +26,7 @@ import HelloResponse, { type HelloReply } from './HelloResponse.vue'
 const REPLY_TIMEOUT_MS = 3000
 
 const { t } = useI18n()
-const { connect, connected, send, receive } = useSerial()
+const { connect, connected, request, receive } = useSerial()
 
 const stopReceiving = receive((line) => console.log('[esp]', line))
 onUnmounted(stopReceiving)
@@ -38,28 +38,6 @@ const error = ref<string>()
 watch(connected, (isConnected) => {
   if (!isConnected) response.value = undefined
 })
-
-// Resolves with the JSON reply carrying `id`, or undefined after the timeout
-function waitForReply(id: number): Promise<HelloReply | undefined> {
-  return new Promise((resolve) => {
-    const stop = receive((line) => {
-      let reply: HelloReply
-      try {
-        reply = JSON.parse(line)
-      } catch {
-        return // not JSON, e.g. a log line
-      }
-      if (reply.id !== id) return
-      clearTimeout(timer)
-      stop()
-      resolve(reply)
-    })
-    const timer = setTimeout(() => {
-      stop()
-      resolve(undefined)
-    }, REPLY_TIMEOUT_MS)
-  })
-}
 
 async function sayHello() {
   loading.value = true
@@ -73,10 +51,8 @@ async function sayHello() {
       return
     }
 
-    const reply = waitForReply(1) // listen before sending, so no answer is missed
-    await send(JSON.stringify({ id: 1, cmd: 'hello' }))
-    const result = await reply
-
+    const result = await request<HelloReply>('hello', {}, REPLY_TIMEOUT_MS)
+    console.log('result', result)
     if (!result) error.value = t('settings.hello.errorTimeout')
     else if (!result.ok) error.value = t('settings.hello.errorDevice')
     else response.value = result

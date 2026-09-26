@@ -5,6 +5,7 @@ const BAUD_RATE = 115200 // must match the ESP32 (same rate as its logs)
 // One connection for the whole app: state lives outside useSerial(),
 // so every component sees the same port (like theme.ts).
 let port: SerialPort | undefined // native object, deliberately not reactive (a Proxy breaks it)
+let nextId = 1 // never reset, so a late reply from an old request can't match a new one
 const connected = ref(false)
 const deviceVersion = ref<string>() // firmware version reported in the handshake
 
@@ -53,6 +54,44 @@ function waitForLine(prefix: string, timeoutMs: number): Promise<string | undefi
     lineHandlers.add(handler)
   })
 }
+
+// Messages for us are JSON objects with either "id" (reply to a request) or "event" (broadcast)
+export interface DeviceMessage {
+  id?: number
+  event?: string
+  [key: string]: unknown
+}
+type MessageListener = (message: DeviceMessage) => void
+
+const pendingReplies = new Map<number, MessageListener>()
+const eventListeners = new Map<string, Set<MessageListener>>()
+
+function handleLine(line: string) {
+  if (!line.trim()) return
+
+  let message: unknown
+  try {
+    message = JSON.parse(line)
+  } catch {
+    message = undefined
+  }
+  if (typeof message !== 'object' || message === null || Array.isArray(message)) {
+    console.debug('[serial] ignored:', line)
+    return
+  }
+
+  const { id, event } = message as DeviceMessage
+  if (typeof id === 'number') {
+    const resolve = pendingReplies.get(id)
+    if (resolve) resolve(message as DeviceMessage)
+    else console.debug('[serial] nobody waits for id', id)
+  } else if (typeof event === 'string') {
+    eventListeners.get(event)?.forEach((listener) => listener(message as DeviceMessage))
+  } else {
+    console.debug('[serial] ignored (no id or event):', line)
+  }
+}
+lineHandlers.add(handleLine)
 
 async function closePort() {
   await reader?.cancel().catch(() => {}) // ends the read loop
@@ -126,6 +165,38 @@ export function useSerial() {
     await closePort()
   }
 
+  // Sends { id, cmd, ...params } and resolves with the reply carrying the same id,
+  // or undefined after the timeout
+  async function request<T = DeviceMessage>(
+    cmd: string,
+    params: Record<string, unknown> = {},
+    timeoutMs = 3000,
+  ): Promise<T | undefined> {
+    const id = nextId++
+    const reply = new Promise<T | undefined>((resolve) => {
+      const timer = setTimeout(() => {
+        pendingReplies.delete(id)
+        resolve(undefined)
+      }, timeoutMs)
+      pendingReplies.set(id, (message) => {
+        clearTimeout(timer)
+        pendingReplies.delete(id)
+        resolve(message as T)
+      })
+    })
+    await send(JSON.stringify({ id, cmd, ...params }))
+    return reply
+  }
+
+  function addListener(event: string, listener: MessageListener) {
+    if (!eventListeners.has(event)) eventListeners.set(event, new Set())
+    eventListeners.get(event)!.add(listener)
+  }
+
+  function removeListener(event: string, listener: MessageListener) {
+    eventListeners.get(event)?.delete(listener)
+  }
+
   // Calls `handler` for every line the device sends; returns a function to stop listening
   function receive(handler: (line: string) => void) {
     lineHandlers.add(handler)
@@ -136,7 +207,9 @@ export function useSerial() {
     connected: readonly(connected),
     deviceVersion: readonly(deviceVersion),
     connect,
-    send,
+    request,
+    addListener,
+    removeListener,
     receive,
     disconnect,
   }
