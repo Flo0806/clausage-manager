@@ -84,5 +84,13 @@
       "tokenConfigured": "Claude token configured",
       "tokenNotConfigured": "Claude token not configured"
     }
+  },
+  "nav": {
+    "label": "Main menu",
+    "open": "Open menu",
+    "close": "Close menu",
+    "home": "Home",
+    "settings": "Settings",
+    "update": "Update"
   }
 }

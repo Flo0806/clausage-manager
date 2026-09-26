@@ -84,5 +84,13 @@
       "tokenConfigured": "Claude-Token eingerichtet",
       "tokenNotConfigured": "Claude-Token nicht eingerichtet"
     }
+  },
+  "nav": {
+    "label": "Hauptmenü",
+    "open": "Menü öffnen",
+    "close": "Menü schließen",
+    "home": "Start",
+    "settings": "Einstellungen",
+    "update": "Update"
   }
 }

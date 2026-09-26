@@ -45,6 +45,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/update': RouteRecordInfo<
+      '/update',
+      '/update',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -69,6 +76,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/settings.vue': {
       routes:
         | '/settings'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/update.vue': {
+      routes:
+        | '/update'
       views:
         | never
       pathParamNames:

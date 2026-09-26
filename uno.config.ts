@@ -45,6 +45,10 @@ export default defineConfig({
           --c-on-primary: 14 14 16;
           --c-danger: 248 113 113;
         }
+        /* no scrolling of the page behind an open modal <dialog> */
+        body:has(dialog[open]) {
+          overflow: hidden;
+        }
         body {
           font-family: ${theme.fontFamily.sans};
           background-color: rgb(var(--c-bg));
