@@ -46,23 +46,6 @@ async function readLoop(p: SerialPort) {
   }
 }
 
-// Resolves with the first line starting with `prefix`, or undefined after the timeout
-function waitForLine(prefix: string, timeoutMs: number): Promise<string | undefined> {
-  return new Promise((resolve) => {
-    const handler = (line: string) => {
-      if (!line.startsWith(prefix)) return
-      clearTimeout(timer)
-      lineHandlers.delete(handler)
-      resolve(line.trim())
-    }
-    const timer = setTimeout(() => {
-      lineHandlers.delete(handler)
-      resolve(undefined)
-    }, timeoutMs)
-    lineHandlers.add(handler)
-  })
-}
-
 // Messages for us are JSON objects with either "id" (reply to a request) or "event" (broadcast)
 export interface DeviceMessage {
   id?: number
@@ -166,6 +149,33 @@ const UPDATE_CHUNK_SIZE = 4096 // must match the firmware
 // While true, nothing else may be sent: the device would write it into the firmware
 const updating = ref(false)
 
+// Sends { id, cmd, ...params } and resolves with the reply carrying the same id,
+// or undefined after the timeout
+async function request<T = DeviceMessage>(
+  cmd: string,
+  params: Record<string, unknown> = {},
+  timeoutMs = 3000,
+): Promise<T | undefined> {
+  if (updating.value) {
+    console.debug('[serial] request refused, update running:', cmd)
+    return undefined
+  }
+  const id = nextId++
+  const reply = new Promise<T | undefined>((resolve) => {
+    const timer = setTimeout(() => {
+      pendingReplies.delete(id)
+      resolve(undefined)
+    }, timeoutMs)
+    pendingReplies.set(id, (message) => {
+      clearTimeout(timer)
+      pendingReplies.delete(id)
+      resolve(message as T)
+    })
+  })
+  await send(JSON.stringify({ id, cmd, ...params }))
+  return reply
+}
+
 const supported = typeof navigator !== 'undefined' && 'serial' in navigator
 let opening = false // auto-connect and a click must not open the port twice
 
@@ -189,14 +199,12 @@ async function openPort(p: SerialPort, { forgetOnNoAnswer = false } = {}) {
     })
 
     // Handshake: the ESP32 may still be booting (opening the port can reset it),
-    // so ask "PING" every 500 ms until it answers "READY"
-    let ready: string | undefined
-    for (let attempt = 0; attempt < 10 && !ready; attempt++) {
-      const answer = waitForLine('READY', 500) // listen before asking, so no answer is missed
-      await send('PING')
-      ready = await answer
+    // so ask "info" every 500 ms until it answers
+    let ready: { ok: boolean; version: string } | undefined
+    for (let attempt = 0; attempt < 10 && !ready?.ok; attempt++) {
+      ready = await request<{ ok: boolean; version: string }>('info', {}, 500)
     }
-    if (!ready) {
+    if (!ready?.ok) {
       await closePort()
       // A freshly picked device that never answers is not a Clausage: don't keep it paired
       if (forgetOnNoAnswer) await p.forget?.()
@@ -204,7 +212,7 @@ async function openPort(p: SerialPort, { forgetOnNoAnswer = false } = {}) {
       return false
     }
 
-    deviceVersion.value = ready.split(' ')[1] // "READY 0.1.0" -> "0.1.0"
+    deviceVersion.value = ready.version
     connected.value = true
     return true
   } catch (e) {
@@ -311,32 +319,6 @@ export function useSerial() {
     return connected.value
   }
 
-  // Sends { id, cmd, ...params } and resolves with the reply carrying the same id,
-  // or undefined after the timeout
-  async function request<T = DeviceMessage>(
-    cmd: string,
-    params: Record<string, unknown> = {},
-    timeoutMs = 3000,
-  ): Promise<T | undefined> {
-    if (updating.value) {
-      console.debug('[serial] request refused, update running:', cmd)
-      return undefined
-    }
-    const id = nextId++
-    const reply = new Promise<T | undefined>((resolve) => {
-      const timer = setTimeout(() => {
-        pendingReplies.delete(id)
-        resolve(undefined)
-      }, timeoutMs)
-      pendingReplies.set(id, (message) => {
-        clearTimeout(timer)
-        pendingReplies.delete(id)
-        resolve(message as T)
-      })
-    })
-    await send(JSON.stringify({ id, cmd, ...params }))
-    return reply
-  }
 
   function addListener(event: string, listener: MessageListener) {
     if (!eventListeners.has(event)) eventListeners.set(event, new Set())

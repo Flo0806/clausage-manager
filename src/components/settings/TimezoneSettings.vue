@@ -30,11 +30,11 @@
         </p>
 
         <p
-          v-if="browserZone && browserZone !== timezone?.name && browserZone !== selected"
+          v-if="browser && browser !== timezone?.name && browser !== selected"
           class="flex flex-wrap items-center gap-2 text-sm"
         >
-          {{ $t('settings.timezone.browserUses', { zone: browserZone }) }}
-          <button class="btn-ghost px-2 py-1 text-sm" @click="selected = browserZone">
+          {{ $t('settings.timezone.browserUses', { zone: browser }) }}
+          <button class="btn-ghost px-2 py-1 text-sm" @click="selected = browser">
             {{ $t('settings.timezone.useBrowser') }}
           </button>
         </p>
@@ -63,34 +63,20 @@ import BaseSelect from '../ui/BaseSelect.vue'
 import FormGroup from '../ui/FormGroup.vue'
 import { useSerial } from '@/composables/serial.ts'
 import { useDevice } from '@/composables/device.ts'
+import { browserZone, isUnset, loadZones, type ZoneTable } from '@/composables/timezones.ts'
 
 const { t, te, locale } = useI18n()
 const { connect, connected } = useSerial()
 const { timezone, setTimezone } = useDevice()
 
-// IANA name -> POSIX rule, from the posix_tz_db project. Loaded only when this card is shown.
-const zones = ref<Record<string, string>>({})
-void import('@/assets/timezones/zones.json').then((m) => (zones.value = m.default))
+// IANA name -> POSIX rule. Loaded only when this card is shown.
+const zones = ref<ZoneTable>({})
+void loadZones().then((table) => (zones.value = table))
 const zoneNames = computed(() => Object.keys(zones.value).sort())
 
-// Browsers sometimes report an old or a newer name than the table uses
-const aliases: Record<string, string> = {
-  UTC: 'Etc/UTC',
-  'Asia/Calcutta': 'Asia/Kolkata',
-  'Asia/Katmandu': 'Asia/Kathmandu',
-  'Asia/Rangoon': 'Asia/Yangon',
-  'Asia/Saigon': 'Asia/Ho_Chi_Minh',
-  'Europe/Kyiv': 'Europe/Kiev',
-}
+const browser = computed(() => browserZone(zones.value))
 
-const browserZone = computed(() => {
-  const name = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const known = aliases[name] ?? name
-  return known in zones.value ? known : undefined // not in the table: pick it by hand
-})
-
-// The device runs on UTC until the web app has set a zone
-const isSet = computed(() => !!timezone.value && !['UTC', 'Etc/UTC'].includes(timezone.value.name))
+const isSet = computed(() => !isUnset(timezone.value?.name))
 
 const statusText = computed(() =>
   isSet.value
@@ -101,10 +87,10 @@ const statusText = computed(() =>
 // Preselect: the device's zone if it has one, otherwise the browser's
 const selected = ref<string>()
 watch(
-  [timezone, browserZone],
+  [timezone, browser],
   () => {
     if (selected.value) return
-    selected.value = isSet.value ? timezone.value?.name : browserZone.value
+    selected.value = isSet.value ? timezone.value?.name : browser.value
   },
   { immediate: true },
 )

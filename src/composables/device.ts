@@ -1,5 +1,6 @@
 import { readonly, ref, watch } from 'vue'
 import { useSerial, type DeviceMessage } from './serial.ts'
+import { browserZone, isUnset, loadZones } from './timezones.ts'
 
 // Commands of the Clausage device, see "Serial commands" in the firmware README
 
@@ -124,6 +125,7 @@ watch(
     wifi.value = reply.wifi
     token.value = reply.token
     timezone.value = reply.timezone
+    if (reply.timezone && isUnset(reply.timezone.name)) void setBrowserTimezone()
     mode.value = reply.mode
     if (reply.usage) {
       const { fetched_at, five_hour, seven_day } = reply.usage
@@ -163,6 +165,21 @@ addListener('mode', (message: DeviceMessage) => {
   mode.value = (message as unknown as { mode: DeviceMode }).mode
 })
 
+// The device still runs on UTC: give it the browser's zone. A zone already set is never replaced,
+// the user may have chosen it on purpose.
+async function setBrowserTimezone() {
+  const zones = await loadZones()
+  const name = browserZone(zones)
+  const rule = name && zones[name]
+  if (name && rule) await sendTimezone(name, rule)
+}
+
+async function sendTimezone(name: string, rule: string) {
+  const reply = await request<TimezoneReply>('timezone.set', { name, rule })
+  if (reply?.ok && reply.timezone) timezone.value = reply.timezone
+  return reply
+}
+
 export function useDevice() {
   // Shows "Hello Clausage!" on the display for 2 seconds, to see which device is connected
   function sayHello() {
@@ -197,11 +214,7 @@ export function useDevice() {
   }
 
   // The device gets UTC from NTP; this tells it the local time zone (there is no event for it)
-  async function setTimezone(name: string, rule: string) {
-    const reply = await request<TimezoneReply>('timezone.set', { name, rule })
-    if (reply?.ok && reply.timezone) timezone.value = reply.timezone
-    return reply
-  }
+  const setTimezone = sendTimezone
 
   return {
     info: readonly(info),
