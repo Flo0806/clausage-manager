@@ -30,7 +30,15 @@
       <BaseCard>
         <h2 class="text-2xl font-bold">{{ $t('update.startTitle') }}</h2>
 
-        <p v-if="installed" class="flex items-center gap-2 text-sm">
+        <p
+          v-if="wrongBoard"
+          role="alert"
+          class="flex items-start gap-2 rounded-md bg-danger/10 p-3 text-sm text-danger"
+        >
+          <span class="i-lucide-ban mt-0.5 inline-block shrink-0" aria-hidden="true" />
+          {{ $t('update.wrongBoard', { board: release.board, device: info?.board }) }}
+        </p>
+        <p v-else-if="installed" class="flex items-center gap-2 text-sm">
           <span class="i-lucide-circle-check inline-block text-primary" aria-hidden="true" />
           {{ $t('update.alreadyInstalled') }}
         </p>
@@ -43,7 +51,9 @@
         </p>
 
         <div>
-          <button class="btn-primary" disabled>{{ $t('update.start') }}</button>
+          <button class="btn-primary" :disabled="!canStart" @click="start(release)">
+            {{ $t('update.start') }}
+          </button>
         </div>
       </BaseCard>
     </template>
@@ -57,10 +67,12 @@ import BaseCard from '@/components/ui/BaseCard.vue'
 import FirmwareFacts from '@/components/update/FirmwareFacts.vue'
 import { useDevice } from '@/composables/device.ts'
 import { useFirmware } from '@/composables/firmware.ts'
+import { useFirmwareUpdate } from '@/composables/firmwareUpdate.ts'
 
 const route = useRoute('/update/[board]/[version]')
 const { loading, error, ensureLoaded, findRelease } = useFirmware()
 const { info } = useDevice()
+const { start, running } = useFirmwareUpdate()
 
 ensureLoaded()
 
@@ -70,4 +82,10 @@ const installed = computed(
   () =>
     info.value?.board === release.value?.board && info.value?.version === release.value?.version,
 )
+
+// Another board is blocked: at best the firmware does not run, at worst it harms the device
+const wrongBoard = computed(() => !!info.value && info.value.board !== release.value?.board)
+
+// Downgrades and reinstalling the same version are allowed
+const canStart = computed(() => !!info.value && !wrongBoard.value && !running.value)
 </script>

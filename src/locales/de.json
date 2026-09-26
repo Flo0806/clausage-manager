@@ -110,6 +110,34 @@
     "alreadyInstalled": "Diese Version ist bereits auf deinem Gerät installiert.",
     "fromTo": "Dein Gerät wird von {from} auf {to} aktualisiert.",
     "noDevice": "Kein Gerät verbunden. Verbinde deinen Clausage, um das Update zu starten.",
-    "start": "Update starten"
+    "start": "Update starten",
+    "wrongBoard": "Diese Firmware ist für {board}, dein Gerät ist ein {device}. Das Update ist gesperrt."
+  },
+  "updateRun": {
+    "title": "Firmware-Update",
+    "doNotUnplug": "Update läuft. Gerät bitte nicht abstecken und diesen Tab nicht schließen.",
+    "close": "Schließen",
+    "success": "Fertig! Dein Clausage läuft jetzt mit {version}.",
+    "step": {
+      "download": "Firmware herunterladen",
+      "verify": "Datei prüfen",
+      "erase": "Speicher auf dem Gerät vorbereiten",
+      "write": "Firmware übertragen",
+      "restart": "Gerät startet neu",
+      "check": "Neue Version prüfen"
+    },
+    "error": {
+      "notConnected": "Kein Gerät verbunden.",
+      "wrongBoard": "Diese Firmware passt nicht zu deinem Gerät.",
+      "download": "Die Firmware konnte nicht heruntergeladen werden.",
+      "size": "Die heruntergeladene Datei hat die falsche Größe. Nichts wurde übertragen.",
+      "hash": "Die heruntergeladene Datei ist beschädigt (Prüfsumme falsch). Nichts wurde übertragen.",
+      "notFirmware": "Die Datei ist keine ESP-Firmware. Nichts wurde übertragen.",
+      "version": "Die Datei enthält eine andere Version als angegeben. Nichts wurde übertragen.",
+      "device": "Das Gerät hat das Update abgelehnt. Es läuft weiter mit der alten Version.",
+      "timeout": "Das Gerät hat nicht rechtzeitig geantwortet. Es läuft weiter mit der alten Version.",
+      "notBack": "Das Gerät hat sich nach dem Neustart nicht zurückgemeldet. Steck es einmal ab und wieder an.",
+      "rollback": "Update fehlgeschlagen: Die neue Firmware ist nicht gestartet, das Gerät läuft wieder mit {from}."
+    }
   }
 }

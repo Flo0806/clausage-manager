@@ -112,17 +112,59 @@ async function closePort() {
   deviceVersion.value = undefined
 }
 
-async function send(text: string) {
-  if (!port?.writable) return
+// Writes raw bytes; throws if the port is gone
+async function writeBytes(bytes: Uint8Array) {
+  if (!port?.writable) throw new Error('port not writable')
 
-  // Lock the stream only for this one message, so the next send() can lock it again
+  // Lock the stream only for this one write, so the next one can lock it again
   const writer = port.writable.getWriter()
   try {
-    await writer.write(new TextEncoder().encode(text + '\n')) // '\n' ends a line on the ESP32
+    await writer.write(bytes)
   } finally {
     writer.releaseLock()
   }
 }
+
+async function send(text: string) {
+  if (!port?.writable) return
+  await writeBytes(new TextEncoder().encode(text + '\n')) // '\n' ends a line on the ESP32
+}
+
+// Resolves on the exact line `expected`; rejects on a line starting with "ERR" or after the timeout.
+// JSON events and logs in between never match exactly, so they are skipped.
+function waitForExactLine(expected: string, timeoutMs: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const finish = (settle: () => void) => {
+      clearTimeout(timer)
+      lineHandlers.delete(handler)
+      settle()
+    }
+    const handler = (line: string) => {
+      const text = line.trim()
+      if (text === expected) finish(resolve)
+      else if (text.startsWith('ERR')) finish(() => reject(new DeviceError(text)))
+    }
+    const timer = setTimeout(
+      () => finish(() => reject(new Error(`no ${expected} within ${timeoutMs} ms`))),
+      timeoutMs,
+    )
+    lineHandlers.add(handler)
+  })
+}
+
+// The device refused, e.g. "ERR verify" (file broken) or a too large file
+export class DeviceError extends Error {
+  reason: string
+  constructor(line: string) {
+    super(line)
+    this.reason = line.slice(3).trim() // "ERR verify" -> "verify"
+  }
+}
+
+const UPDATE_CHUNK_SIZE = 4096 // must match the firmware
+
+// While true, nothing else may be sent: the device would write it into the firmware
+const updating = ref(false)
 
 const supported = typeof navigator !== 'undefined' && 'serial' in navigator
 let opening = false // auto-connect and a click must not open the port twice
@@ -227,6 +269,48 @@ export function useSerial() {
     return connect()
   }
 
+  // Sends a firmware image with the update protocol:
+  // UPDATE <size> -> OK, 4096-byte chunks each answered with ACK, then DONE.
+  // After DONE the device restarts; the port is closed here, reconnect() brings it back.
+  async function flashFirmware(
+    image: Uint8Array,
+    { onErased, onProgress }: { onErased?: () => void; onProgress?: (done: number) => void } = {},
+  ) {
+    updating.value = true
+    try {
+      const erased = waitForExactLine('OK', 15000) // erasing the slot takes a moment
+      await send(`UPDATE ${image.length}`)
+      await erased
+      onErased?.()
+
+      let done: Promise<void> | undefined
+      for (let offset = 0; offset < image.length; offset += UPDATE_CHUNK_SIZE) {
+        const end = Math.min(offset + UPDATE_CHUNK_SIZE, image.length)
+        const ack = waitForExactLine('ACK', 10000)
+        // DONE can arrive right behind the last ACK, so listen for it before the last chunk
+        if (end === image.length) done = waitForExactLine('DONE', 5000)
+        await writeBytes(image.subarray(offset, end))
+        await ack
+        onProgress?.(end / image.length)
+      }
+      await done
+    } finally {
+      // Also after an error: a fresh connection resets the device's update state
+      await closePort()
+      updating.value = false
+    }
+  }
+
+  // Tries to reconnect to the paired device until `timeoutMs` has passed
+  async function reconnect(timeoutMs: number) {
+    const end = Date.now() + timeoutMs
+    while (!connected.value && Date.now() < end) {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await autoConnect()
+    }
+    return connected.value
+  }
+
   // Sends { id, cmd, ...params } and resolves with the reply carrying the same id,
   // or undefined after the timeout
   async function request<T = DeviceMessage>(
@@ -234,6 +318,10 @@ export function useSerial() {
     params: Record<string, unknown> = {},
     timeoutMs = 3000,
   ): Promise<T | undefined> {
+    if (updating.value) {
+      console.debug('[serial] request refused, update running:', cmd)
+      return undefined
+    }
     const id = nextId++
     const reply = new Promise<T | undefined>((resolve) => {
       const timer = setTimeout(() => {
@@ -267,6 +355,7 @@ export function useSerial() {
 
   return {
     connected: readonly(connected),
+    updating: readonly(updating),
     debug,
     paired: readonly(paired),
     deviceVersion: readonly(deviceVersion),
@@ -278,5 +367,7 @@ export function useSerial() {
     disconnect,
     forgetDevice,
     changeDevice,
+    flashFirmware,
+    reconnect,
   }
 }

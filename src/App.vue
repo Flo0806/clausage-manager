@@ -2,6 +2,7 @@
 import { watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TheHeader from './components/layout/TheHeader.vue'
+import FirmwareUpdateDialog from './components/update/FirmwareUpdateDialog.vue'
 
 const { t, locale } = useI18n()
 watchEffect(() => {
@@ -15,4 +16,5 @@ watchEffect(() => {
   <main class="mx-auto max-w-xl p-6 flex flex-col gap-6">
     <RouterView />
   </main>
+  <FirmwareUpdateDialog />
 </template>

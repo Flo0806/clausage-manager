@@ -110,6 +110,34 @@
     "alreadyInstalled": "This version is already installed on your device.",
     "fromTo": "Your device will be updated from {from} to {to}.",
     "noDevice": "No device connected. Connect your Clausage to start the update.",
-    "start": "Start update"
+    "start": "Start update",
+    "wrongBoard": "This firmware is for {board}, your device is a {device}. The update is blocked."
+  },
+  "updateRun": {
+    "title": "Firmware update",
+    "doNotUnplug": "Update running. Please don't unplug the device and don't close this tab.",
+    "close": "Close",
+    "success": "Done! Your Clausage now runs {version}.",
+    "step": {
+      "download": "Download firmware",
+      "verify": "Check file",
+      "erase": "Prepare memory on the device",
+      "write": "Transfer firmware",
+      "restart": "Device restarts",
+      "check": "Check new version"
+    },
+    "error": {
+      "notConnected": "No device connected.",
+      "wrongBoard": "This firmware does not fit your device.",
+      "download": "Could not download the firmware.",
+      "size": "The downloaded file has the wrong size. Nothing was transferred.",
+      "hash": "The downloaded file is damaged (checksum mismatch). Nothing was transferred.",
+      "notFirmware": "The file is not an ESP firmware. Nothing was transferred.",
+      "version": "The file contains a different version than listed. Nothing was transferred.",
+      "device": "The device refused the update. It keeps running the old version.",
+      "timeout": "The device did not answer in time. It keeps running the old version.",
+      "notBack": "The device did not come back after restarting. Unplug it and plug it in again.",
+      "rollback": "Update failed: the new firmware did not start, the device runs {from} again."
+    }
   }
 }
