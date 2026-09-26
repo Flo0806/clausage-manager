@@ -92,5 +92,24 @@
     "home": "Start",
     "settings": "Einstellungen",
     "update": "Update"
+  },
+  "update": {
+    "loading": "Firmware-Liste wird geladen …",
+    "loadError": "Die Firmware-Liste konnte nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "empty": "Noch keine Firmware veröffentlicht.",
+    "latest": "Neueste",
+    "installed": "Installiert",
+    "version": "Version",
+    "board": "Board",
+    "released": "Veröffentlicht",
+    "size": "Größe",
+    "back": "Alle Versionen",
+    "notFound": "Diese Firmware-Version gibt es nicht.",
+    "startTitle": "Update",
+    "alreadyInstalled": "Diese Version ist bereits auf deinem Gerät installiert.",
+    "fromTo": "Dein Gerät wird von {from} auf {to} aktualisiert.",
+    "noDevice": "Kein Gerät verbunden. Verbinde deinen Clausage, um das Update zu starten.",
+    "start": "Update starten"
   }
 }

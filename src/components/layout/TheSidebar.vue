@@ -28,6 +28,7 @@
           <RouterLink
             :to="item.to"
             class="flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-fg/10"
+            :active-class="item.to === '/' ? '' : 'bg-primary/10 text-primary font-medium'"
             exact-active-class="bg-primary/10 text-primary font-medium"
           >
             <span :class="item.icon" class="inline-block text-xl" aria-hidden="true" />

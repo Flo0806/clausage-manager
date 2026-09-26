@@ -45,11 +45,18 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/update': RouteRecordInfo<
-      '/update',
+    '/update/': RouteRecordInfo<
+      '/update/',
       '/update',
       Record<never, never>,
       Record<never, never>,
+      | never
+    >,
+    '/update/[board]/[version]': RouteRecordInfo<
+      '/update/[board]/[version]',
+      '/update/:board/:version',
+      { board: ParamValue<true>, version: ParamValue<true> },
+      { board: ParamValue<false>, version: ParamValue<false> },
       | never
     >,
   }
@@ -81,13 +88,21 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/update.vue': {
+    'src/pages/update/index.vue': {
       routes:
-        | '/update'
+        | '/update/'
       views:
         | never
       pathParamNames:
         | never
+    }
+    'src/pages/update/[board]/[version].vue': {
+      routes:
+        | '/update/[board]/[version]'
+      views:
+        | never
+      pathParamNames:
+        | 'version'
     }
   }
 

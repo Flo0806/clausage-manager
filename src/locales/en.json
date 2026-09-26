@@ -92,5 +92,24 @@
     "home": "Home",
     "settings": "Settings",
     "update": "Update"
+  },
+  "update": {
+    "loading": "Loading firmware list …",
+    "loadError": "Could not load the firmware list.",
+    "retry": "Try again",
+    "empty": "No firmware released yet.",
+    "latest": "Latest",
+    "installed": "Installed",
+    "version": "Version",
+    "board": "Board",
+    "released": "Released",
+    "size": "Size",
+    "back": "All versions",
+    "notFound": "This firmware version does not exist.",
+    "startTitle": "Update",
+    "alreadyInstalled": "This version is already installed on your device.",
+    "fromTo": "Your device will be updated from {from} to {to}.",
+    "noDevice": "No device connected. Connect your Clausage to start the update.",
+    "start": "Start update"
   }
 }
