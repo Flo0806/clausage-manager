@@ -7,6 +7,7 @@
       <DeviceSettings />
       <ClaudeSettings />
       <WlanSettings />
+      <TimezoneSettings />
     </div>
   </div>
 </template>
@@ -14,5 +15,6 @@
 <script lang="ts" setup>
 import ClaudeSettings from '@/components/settings/ClaudeSettings.vue'
 import DeviceSettings from '@/components/settings/DeviceSettings.vue'
+import TimezoneSettings from '@/components/settings/TimezoneSettings.vue'
 import WlanSettings from '@/components/settings/WlanSettings.vue'
 </script>

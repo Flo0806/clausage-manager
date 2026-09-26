@@ -41,11 +41,25 @@ export interface TokenReply {
   error?: 'invalid_token' | 'storage_failed' | (string & {})
 }
 
+// name: for people (IANA, e.g. "Europe/Berlin"); rule: POSIX rule the device calculates with
+export interface TimezoneStatus {
+  name: string
+  rule: string
+}
+
+export interface TimezoneReply {
+  id: number
+  ok: boolean
+  timezone?: TimezoneStatus
+  error?: 'invalid_timezone' | 'storage_failed' | (string & {})
+}
+
 interface InfoReply extends DeviceInfo {
   id: number
   ok: boolean
   wifi?: WifiStatus
   token?: TokenStatus
+  timezone?: TimezoneStatus
 }
 
 interface HelloReply extends DeviceInfo {
@@ -60,6 +74,7 @@ const { connected, request, addListener } = useSerial()
 const info = ref<DeviceInfo>()
 const wifi = ref<WifiStatus>()
 const token = ref<TokenStatus>()
+const timezone = ref<TimezoneStatus>()
 
 // immediate: also covers a connection made before this module was first imported
 watch(
@@ -69,6 +84,7 @@ watch(
       info.value = undefined
       wifi.value = undefined
       token.value = undefined
+      timezone.value = undefined
       return
     }
     // Events only come on changes, so ask once for the current state
@@ -77,6 +93,7 @@ watch(
     info.value = { device: reply.device, version: reply.version, board: reply.board }
     wifi.value = reply.wifi
     token.value = reply.token
+    timezone.value = reply.timezone
   },
   { immediate: true },
 )
@@ -124,14 +141,23 @@ export function useDevice() {
     return reply
   }
 
+  // The device gets UTC from NTP; this tells it the local time zone (there is no event for it)
+  async function setTimezone(name: string, rule: string) {
+    const reply = await request<TimezoneReply>('timezone.set', { name, rule })
+    if (reply?.ok && reply.timezone) timezone.value = reply.timezone
+    return reply
+  }
+
   return {
     info: readonly(info),
     wifi: readonly(wifi),
     token: readonly(token),
+    timezone: readonly(timezone),
     sayHello,
     setWifi,
     clearWifi,
     setToken,
     clearToken,
+    setTimezone,
   }
 }

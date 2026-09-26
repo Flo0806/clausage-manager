@@ -83,6 +83,22 @@
       "wifiNotConnected": "Wi-Fi not connected",
       "tokenConfigured": "Claude token configured",
       "tokenNotConfigured": "Claude token not configured"
+    },
+    "timezone": {
+      "title": "Time zone",
+      "label": "Time zone",
+      "onDevice": "On the device:",
+      "notSet": "No time zone set yet, the device uses UTC",
+      "status": "Time zone: {zone}",
+      "localTime": "Time there right now: {time}",
+      "browserUses": "Your browser uses {zone}.",
+      "useBrowser": "Use it",
+      "save": "Save time zone",
+      "errors": {
+        "invalid_timezone": "The time zone is empty or too long.",
+        "storage_failed": "The device could not store the time zone.",
+        "unknown": "The device answered with an error."
+      }
     }
   },
   "nav": {
