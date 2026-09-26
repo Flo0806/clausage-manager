@@ -33,7 +33,11 @@
       "board": "Board",
       "errorConnect": "Could not connect to the device. Is it plugged in and no other program (e.g. idf monitor) using the port?",
       "errorTimeout": "The device did not answer. Is the Clausage firmware running?",
-      "errorDevice": "The device answered with an error."
+      "errorDevice": "The device answered with an error.",
+      "wifiConnected": "Wi-Fi connected to",
+      "wifiNotConnected": "Wi-Fi not connected",
+      "tokenConfigured": "Claude token configured",
+      "tokenNotConfigured": "Claude token not configured"
     }
   }
 }

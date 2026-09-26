@@ -33,7 +33,11 @@
       "board": "Board",
       "errorConnect": "Keine Verbindung zum Gerät. Ist es eingesteckt und kein anderes Programm (z. B. idf monitor) auf dem Port?",
       "errorTimeout": "Das Gerät hat nicht geantwortet. Läuft die Clausage-Firmware?",
-      "errorDevice": "Das Gerät hat mit einem Fehler geantwortet."
+      "errorDevice": "Das Gerät hat mit einem Fehler geantwortet.",
+      "wifiConnected": "WLAN verbunden mit",
+      "wifiNotConnected": "WLAN nicht verbunden",
+      "tokenConfigured": "Claude-Token eingerichtet",
+      "tokenNotConfigured": "Claude-Token nicht eingerichtet"
     }
   }
 }

@@ -22,20 +22,57 @@
       <dt class="text-muted">{{ $t('settings.hello.board') }}</dt>
       <dd class="font-mono">{{ response.board }}</dd>
     </dl>
+
+    <ul class="flex flex-col gap-2 text-sm">
+      <li class="flex items-center gap-2">
+        <span
+          :class="wifiConnected ? 'i-lucide-wifi text-primary' : 'i-lucide-wifi-off text-muted'"
+          class="inline-block text-lg"
+          aria-hidden="true"
+        />
+        <span v-if="wifiConnected">
+          {{ $t('settings.hello.wifiConnected') }}
+          <span class="font-mono">{{ response.wifi?.ssid }}</span>
+        </span>
+        <span v-else class="text-muted">{{ $t('settings.hello.wifiNotConnected') }}</span>
+      </li>
+      <li class="flex items-center gap-2">
+        <span
+          :class="tokenConfigured ? 'text-primary' : 'text-muted'"
+          class="i-simple-icons-claude inline-block text-lg"
+          aria-hidden="true"
+        />
+        <span :class="{ 'text-muted': !tokenConfigured }">
+          {{
+            tokenConfigured
+              ? $t('settings.hello.tokenConfigured')
+              : $t('settings.hello.tokenNotConfigured')
+          }}
+        </span>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
+
+// Reply to the "info" command. The device never sends the token itself, only whether one is set.
 export interface HelloReply {
   id: number
   ok: boolean
   device: string
   version: string
   board: string
+  wifi?: { state: string; ssid?: string }
+  token?: { configured: boolean }
 }
 
-defineProps<{
+const props = defineProps<{
   response?: HelloReply
   error?: string
 }>()
+
+const wifiConnected = computed(() => props.response?.wifi?.state === 'connected')
+const tokenConfigured = computed(() => props.response?.token?.configured === true)
 </script>

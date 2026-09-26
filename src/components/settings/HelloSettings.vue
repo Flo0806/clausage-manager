@@ -51,7 +51,7 @@ async function sayHello() {
       return
     }
 
-    const result = await request<HelloReply>('hello', {}, REPLY_TIMEOUT_MS)
+    const result = await request<HelloReply>('info', {}, REPLY_TIMEOUT_MS)
     console.log('result', result)
     if (!result) error.value = t('settings.hello.errorTimeout')
     else if (!result.ok) error.value = t('settings.hello.errorDevice')
