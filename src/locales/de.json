@@ -22,7 +22,27 @@
       "ssidPlaceholder": "Name deines Routers",
       "passwordLabel": "Router Passwort",
       "passwordError": "Bitte gib das Router Passwort ein.",
-      "passwordPlaceholder": "1234..."
+      "passwordPlaceholder": "1234...",
+      "save": "Speichern & verbinden",
+      "clear": "WLAN löschen",
+      "status": {
+        "unknown": "WLAN-Status unbekannt",
+        "not_configured": "WLAN nicht eingerichtet",
+        "connecting": "Verbinde mit {ssid} …",
+        "connected": "Verbunden mit {ssid}",
+        "failed": "Verbindung mit {ssid} fehlgeschlagen",
+        "disconnected": "Verbindung zu {ssid} getrennt"
+      },
+      "reason": {
+        "wrong_password": "falsches Passwort",
+        "not_found": "Netzwerk nicht gefunden",
+        "timeout": "Zeitüberschreitung"
+      },
+      "error": {
+        "invalid_ssid": "Die SSID ist leer oder länger als 32 Zeichen.",
+        "invalid_password": "Das Passwort ist länger als 63 Zeichen.",
+        "unknown": "Das Gerät hat mit einem Fehler geantwortet."
+      }
     },
     "hello": {
       "title": "Teste Verbindung",
