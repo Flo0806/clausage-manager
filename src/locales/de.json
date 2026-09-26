@@ -44,14 +44,19 @@
         "unknown": "Das Gerät hat mit einem Fehler geantwortet."
       }
     },
-    "hello": {
-      "title": "Teste Verbindung",
-      "buttonText": "Sag Hallo!",
+    "device": {
+      "title": "Gerät",
       "connected": "Verbunden!",
       "device": "Gerät",
       "version": "Version",
       "board": "Board",
-      "errorConnect": "Keine Verbindung zum Gerät. Ist es eingesteckt und kein anderes Programm (z. B. idf monitor) auf dem Port?",
+      "neverConnected": "Noch kein Gerät verbunden. Steck deinen Clausage per USB ein und verbinde ihn.",
+      "pairedNotConnected": "Clausage bekannt, aber nicht angeschlossen. Sobald du ihn einsteckst, verbindet er sich automatisch.",
+      "connect": "Gerät verbinden",
+      "change": "Gerät wechseln",
+      "forget": "Gerät vergessen",
+      "hello": "Sag Hallo!",
+      "errorConnect": "Keine Verbindung zum Gerät. Läuft die Clausage-Firmware und nutzt kein anderes Programm (z. B. idf monitor) den Port?",
       "errorTimeout": "Das Gerät hat nicht geantwortet. Läuft die Clausage-Firmware?",
       "errorDevice": "Das Gerät hat mit einem Fehler geantwortet.",
       "wifiConnected": "WLAN verbunden mit",

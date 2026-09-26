@@ -114,11 +114,11 @@ async function run(command: () => Promise<WifiReply | undefined>) {
   try {
     await connect()
     if (!connected.value) {
-      error.value = t('settings.hello.errorConnect')
+      error.value = t('settings.device.errorConnect')
       return
     }
     const reply = await command()
-    if (!reply) error.value = t('settings.hello.errorTimeout')
+    if (!reply) error.value = t('settings.device.errorTimeout')
     else if (!reply.ok) error.value = errorText(reply.error)
   } finally {
     busy.value = false

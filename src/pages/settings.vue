@@ -4,7 +4,7 @@
       <span class="i-lucide-settings inline-block"></span> <span>&nbsp;Settings</span>
     </h1>
     <div class="space-y-8">
-      <HelloSettings />
+      <DeviceSettings />
       <ClaudeSettings />
       <WlanSettings />
     </div>
@@ -13,6 +13,6 @@
 
 <script lang="ts" setup>
 import ClaudeSettings from '@/components/settings/ClaudeSettings.vue'
-import HelloSettings from '@/components/settings/HelloSettings.vue'
+import DeviceSettings from '@/components/settings/DeviceSettings.vue'
 import WlanSettings from '@/components/settings/WlanSettings.vue'
 </script>

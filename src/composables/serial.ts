@@ -7,6 +7,7 @@ const BAUD_RATE = 115200 // must match the ESP32 (same rate as its logs)
 let port: SerialPort | undefined // native object, deliberately not reactive (a Proxy breaks it)
 let nextId = 1 // never reset, so a late reply from an old request can't match a new one
 const connected = ref(false)
+const paired = ref(false) // the browser remembers a device this page may open without asking
 const deviceVersion = ref<string>() // firmware version reported in the handshake
 
 // Reading: a loop runs in the background and hands every complete line to the handlers
@@ -104,65 +105,119 @@ async function closePort() {
   deviceVersion.value = undefined
 }
 
-export function useSerial() {
-  async function connect() {
-    if (connected.value) return
-    if (!('serial' in navigator)) {
-      console.error('[serial] Web Serial is not supported in this browser')
-      return
+async function send(text: string) {
+  if (!port?.writable) return
+
+  // Lock the stream only for this one message, so the next send() can lock it again
+  const writer = port.writable.getWriter()
+  try {
+    await writer.write(new TextEncoder().encode(text + '\n')) // '\n' ends a line on the ESP32
+  } finally {
+    writer.releaseLock()
+  }
+}
+
+const supported = typeof navigator !== 'undefined' && 'serial' in navigator
+let opening = false // auto-connect and a click must not open the port twice
+
+async function refreshPaired() {
+  paired.value = supported && (await navigator.serial.getPorts()).length > 0
+}
+
+// Opens `p` and runs the handshake. Returns false if the device did not answer.
+async function openPort(p: SerialPort, { forgetOnNoAnswer = false } = {}) {
+  if (connected.value || opening) return false
+  opening = true
+  try {
+    port = p
+    await port.open({ baudRate: BAUD_RATE })
+    readLoopDone = readLoop(port)
+
+    // Cable unplugged: reset the state, otherwise connect() thinks we are still connected
+    const openedPort = port
+    openedPort.addEventListener('disconnect', () => {
+      if (port === openedPort) void closePort()
+    })
+
+    // Handshake: the ESP32 may still be booting (opening the port can reset it),
+    // so ask "PING" every 500 ms until it answers "READY"
+    let ready: string | undefined
+    for (let attempt = 0; attempt < 10 && !ready; attempt++) {
+      const answer = waitForLine('READY', 500) // listen before asking, so no answer is missed
+      await send('PING')
+      ready = await answer
+    }
+    if (!ready) {
+      await closePort()
+      // A freshly picked device that never answers is not a Clausage: don't keep it paired
+      if (forgetOnNoAnswer) await p.forget?.()
+      console.error('[serial] No answer from the device. Is the Clausage firmware running?')
+      return false
     }
 
+    deviceVersion.value = ready.split(' ')[1] // "READY 0.1.0" -> "0.1.0"
+    connected.value = true
+    return true
+  } catch (e) {
+    // Port busy (e.g. idf monitor still running): keep the pairing, it is the right device
+    console.error('[serial]', e)
+    await closePort()
+    return false
+  } finally {
+    opening = false
+    await refreshPaired()
+  }
+}
+
+// Connects to an already paired device without asking (after reload or when plugged in)
+async function autoConnect() {
+  const [known] = await navigator.serial.getPorts()
+  if (known) await openPort(known)
+}
+
+if (supported) {
+  void refreshPaired().then(autoConnect)
+  navigator.serial.addEventListener('connect', (e) => void openPort(e.target as SerialPort))
+}
+
+export function useSerial() {
+  // Asks the user to pick a device (needs a click), then connects.
+  // Returns true when connected, false when the device failed, undefined when nothing was picked.
+  async function connect(): Promise<boolean | undefined> {
+    if (connected.value) return true
+    if (!supported) {
+      console.error('[serial] Web Serial is not supported in this browser')
+      return undefined
+    }
+    let picked: SerialPort
     try {
-      port = await navigator.serial.requestPort({
+      picked = await navigator.serial.requestPort({
         filters: [
           { usbVendorId: 0x10c4 }, // CP210x USB-serial chip (current ESP32 board)
           { usbVendorId: 0x303a }, // Espressif native USB (ESP32-S3 board)
         ],
       })
-      await port.open({ baudRate: BAUD_RATE })
-      readLoopDone = readLoop(port)
-
-      // Cable unplugged: reset the state, otherwise connect() thinks we are still connected
-      const openedPort = port
-      openedPort.addEventListener('disconnect', () => {
-        if (port === openedPort) void closePort()
-      })
-
-      // Handshake: the ESP32 may still be booting (opening the port can reset it),
-      // so ask "PING" every 500 ms until it answers "READY"
-      let ready: string | undefined
-      for (let attempt = 0; attempt < 10 && !ready; attempt++) {
-        const answer = waitForLine('READY', 500) // listen before asking, so no answer is missed
-        await send('PING')
-        ready = await answer
-      }
-      if (!ready)
-        throw new Error('No answer from the device. Is the Clawd-o-Meter firmware running?')
-
-      deviceVersion.value = ready.split(' ')[1] // "READY 0.1.0" -> "0.1.0"
-      connected.value = true
-    } catch (e) {
-      // No device selected, port busy (e.g. idf monitor still running) or no handshake
-      console.error('[serial]', e)
-      await closePort()
+    } catch {
+      return undefined // dialog closed without picking a device
     }
-  }
-
-  async function send(text: string) {
-    if (!port?.writable) return
-
-    // Lock the stream only for this one message, so the next send() can lock it again
-    const writer = port.writable.getWriter()
-    try {
-      await writer.write(new TextEncoder().encode(text + '\n')) // '\n' ends a line on the ESP32
-    } finally {
-      writer.releaseLock()
-    }
+    return openPort(picked, { forgetOnNoAnswer: true })
   }
 
   async function disconnect() {
     if (!port) return
     await closePort()
+  }
+
+  // Disconnects and removes the pairing, so the next connect() asks again
+  async function forgetDevice() {
+    await closePort()
+    for (const known of await navigator.serial.getPorts()) await known.forget?.()
+    await refreshPaired()
+  }
+
+  async function changeDevice() {
+    await forgetDevice()
+    return connect()
   }
 
   // Sends { id, cmd, ...params } and resolves with the reply carrying the same id,
@@ -205,6 +260,7 @@ export function useSerial() {
 
   return {
     connected: readonly(connected),
+    paired: readonly(paired),
     deviceVersion: readonly(deviceVersion),
     connect,
     request,
@@ -212,5 +268,7 @@ export function useSerial() {
     removeListener,
     receive,
     disconnect,
+    forgetDevice,
+    changeDevice,
   }
 }

@@ -44,14 +44,19 @@
         "unknown": "The device answered with an error."
       }
     },
-    "hello": {
-      "title": "Test Connection",
-      "buttonText": "Say hello!",
+    "device": {
+      "title": "Device",
       "connected": "Connected!",
       "device": "Device",
       "version": "Version",
       "board": "Board",
-      "errorConnect": "Could not connect to the device. Is it plugged in and no other program (e.g. idf monitor) using the port?",
+      "neverConnected": "No device connected yet. Plug in your Clausage via USB and connect it.",
+      "pairedNotConnected": "Clausage known, but not plugged in. It connects automatically as soon as you plug it in.",
+      "connect": "Connect device",
+      "change": "Change device",
+      "forget": "Forget device",
+      "hello": "Say hello!",
+      "errorConnect": "Could not connect to the device. Is the Clausage firmware running and no other program (e.g. idf monitor) using the port?",
       "errorTimeout": "The device did not answer. Is the Clausage firmware running?",
       "errorDevice": "The device answered with an error.",
       "wifiConnected": "Wi-Fi connected to",
