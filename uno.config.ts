@@ -17,6 +17,7 @@ export default defineConfig({
       primary: 'rgb(var(--c-primary))',
       'on-primary': 'rgb(var(--c-on-primary))',
       danger: 'rgb(var(--c-danger))',
+      success: 'rgb(var(--c-success))',
     },
   },
   preflights: [
@@ -33,6 +34,7 @@ export default defineConfig({
           --c-primary: 168 78 43;
           --c-on-primary: 255 255 255;
           --c-danger: 185 28 28;
+          --c-success: 86 112 27;
         }
         :root.dark {
           color-scheme: dark;
@@ -44,6 +46,7 @@ export default defineConfig({
           --c-primary: 217 119 87;
           --c-on-primary: 14 14 16;
           --c-danger: 248 113 113;
+          --c-success: 156 184 90;
         }
         /* no scrolling of the page behind an open modal <dialog> */
         body:has(dialog[open]) {

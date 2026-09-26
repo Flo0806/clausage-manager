@@ -155,5 +155,34 @@
       "notBack": "Das Gerät hat sich nach dem Neustart nicht zurückgemeldet. Steck es einmal ab und wieder an.",
       "rollback": "Update fehlgeschlagen: Die neue Firmware ist nicht gestartet, das Gerät läuft wieder mit {from}."
     }
+  },
+  "usage": {
+    "title": "Claude-Verbrauch",
+    "fiveHour": "5-Stunden-Limit",
+    "sevenDay": "Wochenlimit",
+    "resetsIn": "Reset in {time} h",
+    "resetsAt": "Reset {when}",
+    "newWindow": "Neues Fenster gestartet",
+    "updatedNow": "Stand: gerade eben",
+    "updated": "Stand: {ago}",
+    "stale": "veraltet",
+    "accuracy": "Kann bis zu 1 % hinter dem Wert liegen, den Claude selbst anzeigt.",
+    "mode": {
+      "active": "Aktiv",
+      "saving": "Sparmodus"
+    },
+    "modeHint": {
+      "active": "Das Gerät fragt Claude alle 2 Minuten.",
+      "saving": "Keine Änderung seit einer Weile: Das Gerät fragt nur alle 30 Minuten, das Display ist aus."
+    },
+    "missing": {
+      "noDevice": "Kein Gerät verbunden.",
+      "setupWifi": "Richte das WLAN ein.",
+      "connectClaude": "Verbinde Claude.",
+      "tokenInvalid": "Der Claude-Token ist ungültig.",
+      "waitingWifi": "Warte auf WLAN …",
+      "loading": "Lädt …"
+    },
+    "toSettings": "Zu den Einstellungen"
   }
 }

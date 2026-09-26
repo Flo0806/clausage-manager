@@ -155,5 +155,34 @@
       "notBack": "The device did not come back after restarting. Unplug it and plug it in again.",
       "rollback": "Update failed: the new firmware did not start, the device runs {from} again."
     }
+  },
+  "usage": {
+    "title": "Claude usage",
+    "fiveHour": "5-hour limit",
+    "sevenDay": "Weekly limit",
+    "resetsIn": "Resets in {time} h",
+    "resetsAt": "Resets {when}",
+    "newWindow": "New window started",
+    "updatedNow": "Updated just now",
+    "updated": "Updated {ago}",
+    "stale": "out of date",
+    "accuracy": "Can be up to 1 % behind what Claude itself shows.",
+    "mode": {
+      "active": "Active",
+      "saving": "Saving"
+    },
+    "modeHint": {
+      "active": "The device asks Claude every 2 minutes.",
+      "saving": "No change for a while: the device asks only every 30 minutes, the display is off."
+    },
+    "missing": {
+      "noDevice": "No device connected.",
+      "setupWifi": "Set up Wi-Fi.",
+      "connectClaude": "Connect Claude.",
+      "tokenInvalid": "The Claude token is invalid.",
+      "waitingWifi": "Waiting for Wi-Fi …",
+      "loading": "Loading …"
+    },
+    "toSettings": "Go to settings"
   }
 }

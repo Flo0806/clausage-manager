@@ -10,6 +10,7 @@ export interface WifiStatus {
   state: WifiState
   ssid: string
   reason?: WifiFailReason // only when state is 'failed'
+  rssi?: number // signal in dBm, only while connected (-50 good, -90 very weak)
 }
 
 export interface WifiReply {
@@ -54,12 +55,35 @@ export interface TimezoneReply {
   error?: 'invalid_timezone' | 'storage_failed' | (string & {})
 }
 
+// active: asks Claude every 2 minutes; saving: every 30 minutes, display off
+export type DeviceMode = 'active' | 'saving'
+
+export interface UsageWindow {
+  percent: number
+  resets_at: number // Unix time in seconds
+}
+
+// Only known once Claude has answered once
+export interface Usage {
+  fetched_at: number // when Claude gave these numbers (Unix time, seconds); 0 = unknown
+  five_hour: UsageWindow
+  seven_day: UsageWindow
+}
+
+// A request to Claude is running; `word` is what the display shows ("Clauding", "Pondering", ...)
+export interface Fetching {
+  active: boolean
+  word?: string
+}
+
 interface InfoReply extends DeviceInfo {
   id: number
   ok: boolean
   wifi?: WifiStatus
   token?: TokenStatus
   timezone?: TimezoneStatus
+  mode?: DeviceMode
+  usage?: Usage
 }
 
 interface HelloReply extends DeviceInfo {
@@ -75,6 +99,9 @@ const info = ref<DeviceInfo>()
 const wifi = ref<WifiStatus>()
 const token = ref<TokenStatus>()
 const timezone = ref<TimezoneStatus>()
+const mode = ref<DeviceMode>()
+const usage = ref<Usage>()
+const fetching = ref<Fetching>({ active: false })
 
 // immediate: also covers a connection made before this module was first imported
 watch(
@@ -85,6 +112,9 @@ watch(
       wifi.value = undefined
       token.value = undefined
       timezone.value = undefined
+      mode.value = undefined
+      usage.value = undefined
+      fetching.value = { active: false }
       return
     }
     // Events only come on changes, so ask once for the current state
@@ -94,18 +124,43 @@ watch(
     wifi.value = reply.wifi
     token.value = reply.token
     timezone.value = reply.timezone
+    mode.value = reply.mode
+    if (reply.usage) {
+      const { fetched_at, five_hour, seven_day } = reply.usage
+      usage.value = { fetched_at, five_hour, seven_day }
+    }
   },
   { immediate: true },
 )
 
 addListener('wifi', (message: DeviceMessage) => {
-  const { state, ssid, reason } = message as unknown as WifiStatus
-  wifi.value = { state, ssid, reason }
+  const { state, ssid, reason, rssi } = message as unknown as WifiStatus
+  wifi.value = { state, ssid, reason, rssi }
 })
 
 addListener('token', (message: DeviceMessage) => {
   const { configured, state, problem } = message as unknown as TokenStatus
   token.value = { configured, state, problem }
+})
+
+addListener('usage', (message: DeviceMessage) => {
+  const {
+    fetched_at,
+    five_hour,
+    seven_day,
+    mode: usageMode,
+  } = message as unknown as Usage & { mode?: DeviceMode }
+  usage.value = { fetched_at, five_hour, seven_day }
+  if (usageMode) mode.value = usageMode
+})
+
+addListener('fetching', (message: DeviceMessage) => {
+  const { active, word } = message as unknown as Fetching
+  fetching.value = { active, word }
+})
+
+addListener('mode', (message: DeviceMessage) => {
+  mode.value = (message as unknown as { mode: DeviceMode }).mode
 })
 
 export function useDevice() {
@@ -153,6 +208,9 @@ export function useDevice() {
     wifi: readonly(wifi),
     token: readonly(token),
     timezone: readonly(timezone),
+    mode: readonly(mode),
+    usage: readonly(usage),
+    fetching: readonly(fetching),
     sayHello,
     setWifi,
     clearWifi,
