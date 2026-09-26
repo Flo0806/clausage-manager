@@ -1,11 +1,34 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onMounted, onUnmounted, watchEffect } from 'vue'
+import { useI18n } from 'vue-i18n'
+import TheHeader from './components/layout/TheHeader.vue'
+import { useSerial } from './composables/serial.ts'
+
+const { t, locale } = useI18n()
+const { connect, send, disconnect } = useSerial()
+
+watchEffect(() => {
+  document.documentElement.lang = locale.value
+  document.title = t('app.title')
+})
+
+onMounted(async () => {})
+
+onUnmounted(async () => {
+  await disconnect()
+})
+
+async function sendToEsp() {
+  await connect()
+  send('Hello!')
+}
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-</template>
+  <TheHeader />
+  <main class="mx-auto max-w-lg p-6 flex flex-col gap-6">
+    <button class="btn btn-primary>" @click="sendToEsp()">Hello ESP!</button>
 
-<style scoped></style>
+    <RouterView />
+  </main>
+</template>

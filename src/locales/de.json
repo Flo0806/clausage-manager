@@ -7,5 +7,33 @@
     "auto": "System",
     "light": "Hell",
     "dark": "Dunkel"
+  },
+  "settings": {
+    "claude": {
+      "title": "Claude",
+      "label": "Claude Token",
+      "error": "Bitte gib einen Token ein.",
+      "placeholder": "Im Terminal: claude setup-token"
+    },
+    "wlan": {
+      "title": "WLAN",
+      "ssidLabel": "SSID (Name)",
+      "ssidError": "Bitte gib den SSID-Namen ein.",
+      "ssidPlaceholder": "Name deines Routers",
+      "passwordLabel": "Router Passwort",
+      "passwordError": "Bitte gib das Router Passwort ein.",
+      "passwordPlaceholder": "1234..."
+    },
+    "hello": {
+      "title": "Teste Verbindung",
+      "buttonText": "Sag Hallo!",
+      "connected": "Verbunden!",
+      "device": "Gerät",
+      "version": "Version",
+      "board": "Board",
+      "errorConnect": "Keine Verbindung zum Gerät. Ist es eingesteckt und kein anderes Programm (z. B. idf monitor) auf dem Port?",
+      "errorTimeout": "Das Gerät hat nicht geantwortet. Läuft die Clausage-Firmware?",
+      "errorDevice": "Das Gerät hat mit einem Fehler geantwortet."
+    }
   }
 }

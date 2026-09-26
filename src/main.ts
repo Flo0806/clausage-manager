@@ -1,5 +1,5 @@
 import '@unocss/reset/tailwind.css'
-import '@fontsource-variable/geist'
+import './assets/fonts/geist.css'
 import '@fontsource-variable/geist-mono'
 import 'virtual:uno.css'
 import { createApp } from 'vue'

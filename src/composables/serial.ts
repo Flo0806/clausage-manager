@@ -83,6 +83,12 @@ export function useSerial() {
       await port.open({ baudRate: BAUD_RATE })
       readLoopDone = readLoop(port)
 
+      // Cable unplugged: reset the state, otherwise connect() thinks we are still connected
+      const openedPort = port
+      openedPort.addEventListener('disconnect', () => {
+        if (port === openedPort) void closePort()
+      })
+
       // Handshake: the ESP32 may still be booting (opening the port can reset it),
       // so ask "PING" every 500 ms until it answers "READY"
       let ready: string | undefined
@@ -120,11 +126,18 @@ export function useSerial() {
     await closePort()
   }
 
+  // Calls `handler` for every line the device sends; returns a function to stop listening
+  function receive(handler: (line: string) => void) {
+    lineHandlers.add(handler)
+    return () => lineHandlers.delete(handler)
+  }
+
   return {
     connected: readonly(connected),
     deviceVersion: readonly(deviceVersion),
     connect,
     send,
+    receive,
     disconnect,
   }
 }

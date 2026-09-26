@@ -61,5 +61,6 @@ export default defineConfig({
     'btn-ghost': 'btn text-fg enabled:hover:bg-fg/10',
     input:
       'box-border w-full px-3 py-2 rounded-md bg-bg text-fg border border-border placeholder:text-muted transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/30',
+    list: 'list-disc list-inside',
   },
 })
