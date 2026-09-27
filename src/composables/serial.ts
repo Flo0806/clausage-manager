@@ -113,35 +113,37 @@ async function send(text: string) {
   await writeBytes(new TextEncoder().encode(text + '\n')) // '\n' ends a line on the ESP32
 }
 
-// Resolves on the exact line `expected`; rejects on a line starting with "ERR" or after the timeout.
-// JSON events and logs in between never match exactly, so they are skipped.
-function waitForExactLine(expected: string, timeoutMs: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const finish = (settle: () => void) => {
-      clearTimeout(timer)
-      lineHandlers.delete(handler)
-      settle()
-    }
-    const handler = (line: string) => {
-      const text = line.trim()
-      if (text === expected) finish(resolve)
-      else if (text.startsWith('ERR')) finish(() => reject(new DeviceError(text)))
-    }
-    const timer = setTimeout(
-      () => finish(() => reject(new Error(`no ${expected} within ${timeoutMs} ms`))),
-      timeoutMs,
-    )
-    lineHandlers.add(handler)
-  })
+// The device refused or the update failed; `reason` is its error code (e.g. "verify", "cannot_update")
+export class DeviceError extends Error {
+  constructor(public reason: string) {
+    super(reason)
+  }
 }
 
-// The device refused, e.g. "ERR verify" (file broken) or a too large file
-export class DeviceError extends Error {
-  reason: string
-  constructor(line: string) {
-    super(line)
-    this.reason = line.slice(3).trim() // "ERR verify" -> "verify"
-  }
+// Resolves on the first "update" event for which `until` is true; rejects on state "failed"
+// or after the timeout. Other events and log lines in between are ignored.
+function waitForUpdateEvent(
+  until: (message: DeviceMessage) => boolean,
+  timeoutMs: number,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const listeners = eventListeners.get('update') ?? new Set<MessageListener>()
+    eventListeners.set('update', listeners)
+    const finish = (settle: () => void) => {
+      clearTimeout(timer)
+      listeners.delete(listener)
+      settle()
+    }
+    const listener: MessageListener = (message) => {
+      if (message.state === 'failed') finish(() => reject(new DeviceError(String(message.error))))
+      else if (until(message)) finish(resolve)
+    }
+    const timer = setTimeout(
+      () => finish(() => reject(new Error(`no update event within ${timeoutMs} ms`))),
+      timeoutMs,
+    )
+    listeners.add(listener)
+  })
 }
 
 const UPDATE_CHUNK_SIZE = 4096 // must match the firmware
@@ -160,6 +162,15 @@ async function request<T = DeviceMessage>(
     console.debug('[serial] request refused, update running:', cmd)
     return undefined
   }
+  return sendRequest<T>(cmd, params, timeoutMs)
+}
+
+// Without the update lock: only for the "update" command itself
+async function sendRequest<T>(
+  cmd: string,
+  params: Record<string, unknown>,
+  timeoutMs: number,
+): Promise<T | undefined> {
   const id = nextId++
   const reply = new Promise<T | undefined>((resolve) => {
     const timer = setTimeout(() => {
@@ -277,28 +288,36 @@ export function useSerial() {
     return connect()
   }
 
-  // Sends a firmware image with the update protocol:
-  // UPDATE <size> -> OK, 4096-byte chunks each answered with ACK, then DONE.
-  // After DONE the device restarts; the port is closed here, reconnect() brings it back.
+  // Sends a firmware image: {"cmd":"update","size":n} -> ok, then 4096-byte chunks, each confirmed by
+  // {"event":"update","received":bytes}, finally {"event":"update","state":"done"} (or "failed").
+  // After "done" the device restarts; the port is closed here, reconnect() brings it back.
   async function flashFirmware(
     image: Uint8Array,
     { onErased, onProgress }: { onErased?: () => void; onProgress?: (done: number) => void } = {},
   ) {
     updating.value = true
     try {
-      const erased = waitForExactLine('OK', 15000) // erasing the slot takes a moment
-      await send(`UPDATE ${image.length}`)
-      await erased
+      // Erasing the update slot takes a moment
+      const reply = await sendRequest<{ ok: boolean; error?: string }>(
+        'update',
+        { size: image.length },
+        15000,
+      )
+      if (!reply) throw new Error('no answer to "update" within 15000 ms')
+      if (!reply.ok) throw new DeviceError(reply.error ?? 'unknown')
       onErased?.()
 
       let done: Promise<void> | undefined
       for (let offset = 0; offset < image.length; offset += UPDATE_CHUNK_SIZE) {
         const end = Math.min(offset + UPDATE_CHUNK_SIZE, image.length)
-        const ack = waitForExactLine('ACK', 10000)
-        // DONE can arrive right behind the last ACK, so listen for it before the last chunk
-        if (end === image.length) done = waitForExactLine('DONE', 5000)
+        const received = waitForUpdateEvent((m) => Number(m.received) >= end, 10000)
+        // "done" can arrive right behind the last "received", so listen for it before the last chunk
+        if (end === image.length) {
+          done = waitForUpdateEvent((m) => m.state === 'done', 5000)
+          done.catch(() => {}) // a "failed" is reported by `received` first; avoid an unhandled rejection
+        }
         await writeBytes(image.subarray(offset, end))
-        await ack
+        await received
         onProgress?.(end / image.length)
       }
       await done

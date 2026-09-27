@@ -1,7 +1,17 @@
 <template>
   <div class="flex flex-col gap-1.5">
-    <div class="flex items-baseline justify-between">
-      <span class="font-medium">{{ label }}</span>
+    <div class="flex items-baseline justify-between gap-2">
+      <span class="flex flex-wrap items-center gap-2">
+        <span class="font-medium">{{ label }}</span>
+        <span
+          v-if="forecast"
+          class="rounded-full px-2 py-0.5 text-xs"
+          :class="forecastBadge[forecast]"
+          :title="$t('usage.forecastHint')"
+        >
+          {{ forecastText }}
+        </span>
+      </span>
       <span class="font-mono text-2xl font-semibold" :class="textColor">{{ percent }} %</span>
     </div>
 
@@ -51,6 +61,33 @@ const barColors = { ok: 'bg-success', warn: 'bg-primary', danger: 'bg-danger' } 
 const textColors = { ok: 'text-fg', warn: 'text-primary', danger: 'text-danger' } as const
 const barColor = computed(() => barColors[level.value])
 const textColor = computed(() => textColors[level.value])
+
+// Same badges as the display; none when unknown or when the window has already run out
+const forecast = computed(() => {
+  const value = props.window.forecast
+  return !expired.value && value && value !== 'unknown' ? value : undefined
+})
+const forecastBadge = {
+  on_track: 'bg-success/15 text-success',
+  tight: 'bg-primary/15 text-primary',
+  too_fast: 'bg-danger/15 text-danger',
+} as const
+
+// 5 hours: time of day; week: weekday and time
+function formatMoment(ms: number) {
+  return new Intl.DateTimeFormat(locale.value, {
+    ...(props.kind === 'seven_day' && { weekday: 'short' }),
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(ms)
+}
+
+const forecastText = computed(() => {
+  if (forecast.value === 'too_fast' && props.window.limit_at) {
+    return t('usage.forecast.too_fast_at', { when: formatMoment(props.window.limit_at * 1000) })
+  }
+  return forecast.value ? t(`usage.forecast.${forecast.value}`) : ''
+})
 
 // 5 hours: countdown "1:23 h"; week: weekday and time "Tue 21:00"
 const resetText = computed(() => {

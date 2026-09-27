@@ -59,9 +59,14 @@ export interface TimezoneReply {
 // active: asks Claude every 2 minutes; saving: every 30 minutes, display off
 export type DeviceMode = 'active' | 'saving'
 
+// At the pace so far, where will the window end? unknown: too early to tell (first tenth)
+export type Forecast = 'on_track' | 'tight' | 'too_fast' | 'unknown'
+
 export interface UsageWindow {
   percent: number
   resets_at: number // Unix time in seconds
+  forecast?: Forecast // calculated by the device when the message was sent
+  limit_at?: number // only with too_fast: when 100 % is reached (Unix time in seconds)
 }
 
 // Only known once Claude has answered once
@@ -102,6 +107,20 @@ export interface SettingsReply {
     | (string & {})
 }
 
+// What the device's own requests to Claude used
+export interface Stats {
+  requests: number // requests that reached Claude
+  tokens: number // tokens Claude counted for them
+  since: number // Unix time of the last reset; 0 = the device didn't know the time yet
+}
+
+interface StatsReply {
+  id: number
+  ok: boolean
+  stats?: Stats
+  error?: string
+}
+
 interface InfoReply extends DeviceInfo {
   id: number
   ok: boolean
@@ -128,37 +147,49 @@ const timezone = ref<TimezoneStatus>()
 const mode = ref<DeviceMode>()
 const usage = ref<Usage>()
 const fetching = ref<Fetching>({ active: false })
+const stats = ref<Stats>()
+const restarting = ref(false) // after reboot / factory reset, until the device is back
+
+// Events only come on changes, so ask for the current state after connecting and after a restart
+async function loadInfo() {
+  const reply = await request<InfoReply>('info')
+  if (!reply?.ok) return
+  info.value = { device: reply.device, version: reply.version, board: reply.board }
+  wifi.value = reply.wifi
+  token.value = reply.token
+  timezone.value = reply.timezone
+  // Also after a factory reset: the device is back on UTC
+  if (reply.timezone && isUnset(reply.timezone.name)) void setBrowserTimezone()
+  void loadStats()
+  mode.value = reply.mode
+  // A factory reset forgets the numbers: no usage in the reply then
+  if (reply.usage) {
+    const { fetched_at, five_hour, seven_day } = reply.usage
+    usage.value = { fetched_at, five_hour, seven_day }
+  } else usage.value = undefined
+  restarting.value = false
+}
 
 // immediate: also covers a connection made before this module was first imported
 watch(
   connected,
-  async (isConnected) => {
-    if (!isConnected) {
-      info.value = undefined
-      wifi.value = undefined
-      token.value = undefined
-      timezone.value = undefined
-      mode.value = undefined
-      usage.value = undefined
-      fetching.value = { active: false }
-      return
-    }
-    // Events only come on changes, so ask once for the current state
-    const reply = await request<InfoReply>('info')
-    if (!reply?.ok) return
-    info.value = { device: reply.device, version: reply.version, board: reply.board }
-    wifi.value = reply.wifi
-    token.value = reply.token
-    timezone.value = reply.timezone
-    if (reply.timezone && isUnset(reply.timezone.name)) void setBrowserTimezone()
-    mode.value = reply.mode
-    if (reply.usage) {
-      const { fetched_at, five_hour, seven_day } = reply.usage
-      usage.value = { fetched_at, five_hour, seven_day }
-    }
+  (isConnected) => {
+    if (isConnected) return void loadInfo()
+    info.value = undefined
+    wifi.value = undefined
+    token.value = undefined
+    timezone.value = undefined
+    mode.value = undefined
+    usage.value = undefined
+    fetching.value = { active: false }
+    stats.value = undefined
   },
   { immediate: true },
 )
+
+// After every start. The native USB port disappears on a restart (reconnect runs loadInfo);
+// a USB-serial chip keeps the port open, then this is the only sign the device is back.
+addListener('ready', () => void loadInfo())
 
 addListener('wifi', (message: DeviceMessage) => {
   const { state, ssid, reason, rssi } = message as unknown as WifiStatus
@@ -179,6 +210,7 @@ addListener('usage', (message: DeviceMessage) => {
   } = message as unknown as Usage & { mode?: DeviceMode }
   usage.value = { fetched_at, five_hour, seven_day }
   if (usageMode) mode.value = usageMode
+  void loadStats() // every usage event is one more request; there is no stats event
 })
 
 addListener('fetching', (message: DeviceMessage) => {
@@ -189,6 +221,19 @@ addListener('fetching', (message: DeviceMessage) => {
 addListener('mode', (message: DeviceMessage) => {
   mode.value = (message as unknown as { mode: DeviceMode }).mode
 })
+
+// Cleared by loadInfo() once the device answers again; the timeout keeps it from hanging forever
+let restartTimer: ReturnType<typeof setTimeout> | undefined
+function markRestarting() {
+  restarting.value = true
+  clearTimeout(restartTimer)
+  restartTimer = setTimeout(() => (restarting.value = false), 30000)
+}
+
+async function loadStats() {
+  const reply = await request<StatsReply>('stats.get')
+  if (reply?.ok && reply.stats) stats.value = reply.stats
+}
 
 // The device still runs on UTC: give it the browser's zone. A zone already set is never replaced,
 // the user may have chosen it on purpose.
@@ -241,6 +286,29 @@ export function useDevice() {
   // The device gets UTC from NTP; this tells it the local time zone (there is no event for it)
   const setTimezone = sendTimezone
 
+  // The device restarts about 0.2 s after the answer
+  async function reboot() {
+    const reply = await request<{ id: number; ok: boolean; error?: string }>('reboot')
+    if (reply?.ok) markRestarting()
+    return reply
+  }
+
+  // Forgets Wi-Fi, token, time zone, settings and statistics; the firmware stays.
+  // The phrase is what the device demands, so this can't happen by accident.
+  async function factoryReset() {
+    const reply = await request<{ id: number; ok: boolean; error?: string }>('reset', {
+      confirm: 'forget everything',
+    })
+    if (reply?.ok) markRestarting()
+    return reply
+  }
+
+  async function resetStats() {
+    const reply = await request<StatsReply>('stats.reset')
+    if (reply?.ok && reply.stats) stats.value = reply.stats
+    return reply
+  }
+
   // Not part of "info" and there is no event: only the settings card needs them
   function getSettings() {
     return request<SettingsReply>('settings.get')
@@ -259,6 +327,8 @@ export function useDevice() {
     mode: readonly(mode),
     usage: readonly(usage),
     fetching: readonly(fetching),
+    stats: readonly(stats),
+    restarting: readonly(restarting),
     sayHello,
     setWifi,
     clearWifi,
@@ -267,5 +337,8 @@ export function useDevice() {
     setTimezone,
     getSettings,
     setSettings,
+    resetStats,
+    reboot,
+    factoryReset,
   }
 }

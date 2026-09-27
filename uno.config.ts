@@ -66,6 +66,8 @@ export default defineConfig({
     'btn-primary': 'btn bg-primary text-on-primary enabled:hover:bg-primary/85',
     'btn-secondary': 'btn bg-fg/10 text-fg enabled:hover:bg-fg/15',
     'btn-ghost': 'btn text-fg enabled:hover:bg-fg/10',
+    // text-bg: white on the dark red in light mode, near-black on the light red in dark mode
+    'btn-danger': 'btn bg-danger text-bg enabled:hover:bg-danger/85',
     input:
       'box-border w-full px-3 py-2 rounded-md bg-bg text-fg border border-border placeholder:text-muted transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/30',
     list: 'list-disc list-inside',

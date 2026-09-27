@@ -42,9 +42,20 @@
         :now="now"
       />
 
-      <p v-if="updatedText" class="self-end text-xs text-muted" :title="$t('usage.accuracy')">
-        {{ updatedText }}<template v-if="stale"> · {{ $t('usage.stale') }}</template>
-      </p>
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-muted">
+        <!-- What the device's own requests cost; details and reset in the settings -->
+        <span v-if="stats" :title="$t('usage.statsHint')">
+          {{
+            $t('usage.stats', {
+              requests: stats.requests.toLocaleString(locale),
+              tokens: stats.tokens.toLocaleString(locale),
+            })
+          }}
+        </span>
+        <span v-if="updatedText" class="ml-auto" :title="$t('usage.accuracy')">
+          {{ updatedText }}<template v-if="stale"> · {{ $t('usage.stale') }}</template>
+        </span>
+      </div>
     </template>
 
     <!-- Instead of the bars, one clear line when something is missing (same as the display) -->
@@ -76,7 +87,7 @@ import { useDevice } from '@/composables/device.ts'
 
 const { t, locale } = useI18n()
 const { connected } = useSerial()
-const { wifi, token, usage, mode, fetching } = useDevice()
+const { wifi, token, usage, mode, fetching, stats } = useDevice()
 
 // Active is "all good" (olive like the display), saving means the display is off (gray)
 const modeBadge = {

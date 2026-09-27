@@ -13,10 +13,23 @@
 
         <p v-else class="text-muted">{{ $t('settings.device.neverConnected') }}</p>
 
+        <p v-if="restarting" role="status" class="flex items-center gap-2 text-sm text-primary">
+          <span class="i-lucide-loader-circle inline-block animate-spin" aria-hidden="true" />
+          {{ $t('settings.device.restarting') }}
+        </p>
+
         <div class="flex flex-wrap gap-2">
           <template v-if="paired">
             <button v-if="connected" class="btn-primary" :disabled="busy" @click="wave">
               {{ $t('settings.device.hello') }}
+            </button>
+            <button
+              v-if="connected"
+              class="btn-secondary"
+              :disabled="busy || restarting"
+              @click="restart"
+            >
+              {{ $t('settings.device.reboot') }}
             </button>
             <button class="btn-secondary" :disabled="busy" @click="change">
               {{ $t('settings.device.change') }}
@@ -38,6 +51,35 @@
           <span class="i-lucide-circle-alert mt-0.5 inline-block shrink-0" aria-hidden="true" />
           <span>{{ error }}</span>
         </div>
+
+        <!-- Danger zone: can't be undone, so it asks in a dialog -->
+        <div
+          v-if="connected"
+          class="mt-2 flex flex-col items-start gap-2 border-t border-border pt-4"
+        >
+          <h3 class="text-sm font-semibold text-danger">{{ $t('settings.device.dangerZone') }}</h3>
+          <p class="text-sm text-muted">{{ $t('settings.device.factoryResetHint') }}</p>
+          <button
+            class="btn-danger"
+            :disabled="busy || restarting"
+            @click="confirmReset = true"
+          >
+            {{ $t('settings.device.factoryReset') }}
+          </button>
+        </div>
+
+        <ConfirmDialog
+          v-model="confirmReset"
+          danger
+          :title="$t('settings.device.factoryResetTitle')"
+          :confirm-label="$t('settings.device.factoryResetConfirm')"
+          @confirm="factory"
+        >
+          <p class="mb-2">{{ $t('settings.device.factoryResetText') }}</p>
+          <ul class="list-disc pl-5 text-muted">
+            <li v-for="item in forgottenItems" :key="item">{{ $t(`settings.device.forgets.${item}`) }}</li>
+          </ul>
+        </ConfirmDialog>
       </div>
     </div>
   </BaseCard>
@@ -49,11 +91,15 @@ import { useI18n } from 'vue-i18n'
 import { useSerial } from '@/composables/serial.ts'
 import { useDevice } from '@/composables/device.ts'
 import BaseCard from '../ui/BaseCard.vue'
+import ConfirmDialog from '../ui/ConfirmDialog.vue'
 import DeviceStatus from './DeviceStatus.vue'
 
 const { t } = useI18n()
 const { connected, paired, connect, changeDevice, forgetDevice } = useSerial()
-const { info, wifi, token, sayHello } = useDevice()
+const { info, wifi, token, restarting, sayHello, reboot, factoryReset } = useDevice()
+
+const confirmReset = ref(false)
+const forgottenItems = ['wifi', 'token', 'timezone', 'settings', 'stats'] as const
 
 const busy = ref(false)
 const error = ref<string>()
@@ -89,6 +135,20 @@ const forget = () => run(forgetDevice)
 const wave = () =>
   run(async () => {
     const reply = await sayHello()
+    if (!reply) error.value = t('settings.device.errorTimeout')
+    else if (!reply.ok) error.value = t('settings.device.errorDevice')
+  })
+
+const restart = () =>
+  run(async () => {
+    const reply = await reboot()
+    if (!reply) error.value = t('settings.device.errorTimeout')
+    else if (!reply.ok) error.value = t('settings.device.errorDevice')
+  })
+
+const factory = () =>
+  run(async () => {
+    const reply = await factoryReset()
     if (!reply) error.value = t('settings.device.errorTimeout')
     else if (!reply.ok) error.value = t('settings.device.errorDevice')
   })

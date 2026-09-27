@@ -82,7 +82,22 @@
       "wifiConnected": "Wi-Fi connected to",
       "wifiNotConnected": "Wi-Fi not connected",
       "tokenConfigured": "Claude token configured",
-      "tokenNotConfigured": "Claude token not configured"
+      "tokenNotConfigured": "Claude token not configured",
+      "reboot": "Restart",
+      "restarting": "Device is restarting …",
+      "dangerZone": "Danger zone",
+      "factoryResetHint": "Takes the device back to its very first day. The firmware stays.",
+      "factoryReset": "Reset to factory settings",
+      "factoryResetTitle": "Forget everything?",
+      "factoryResetText": "The device forgets everything and restarts. This can't be undone:",
+      "factoryResetConfirm": "Yes, forget everything",
+      "forgets": {
+        "wifi": "Wi-Fi credentials",
+        "token": "Claude token and the stored usage numbers",
+        "timezone": "Time zone",
+        "settings": "Brightness, orientation and polling intervals",
+        "stats": "Statistics"
+      }
     },
     "timezone": {
       "title": "Time zone",
@@ -124,6 +139,19 @@
       "rotation": "Where does the USB cable come out?",
       "usb_left": "USB on the left",
       "usb_right": "USB on the right"
+    },
+    "stats": {
+      "title": "Statistics",
+      "noDevice": "Connect your device to see the statistics.",
+      "intro": "What the device's own requests to Claude used.",
+      "requests": "Requests",
+      "tokens": "Tokens",
+      "since": "Since {date}",
+      "sinceUnknown": "Since: unknown (the device didn't know the time yet)",
+      "reset": "Reset statistics",
+      "confirm": "Really set to 0?",
+      "confirmYes": "Yes, reset",
+      "confirmNo": "Cancel"
     }
   },
   "nav": {
@@ -208,6 +236,18 @@
       "waitingWifi": "Waiting for Wi-Fi …",
       "loading": "Loading …"
     },
-    "toSettings": "Go to settings"
+    "toSettings": "Go to settings",
+    "stats": "Device: {requests} requests · {tokens} tokens",
+    "statsHint": "What the device's own requests used. Details and reset in the settings.",
+    "forecast": {
+      "on_track": "On track",
+      "tight": "Tight",
+      "too_fast": "Too fast",
+      "too_fast_at": "Too fast · limit {when}"
+    },
+    "forecastHint": "The device's forecast: where does the window end at the pace so far?"
+  },
+  "dialog": {
+    "cancel": "Cancel"
   }
 }

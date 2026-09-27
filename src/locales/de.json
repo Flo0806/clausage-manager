@@ -82,7 +82,22 @@
       "wifiConnected": "WLAN verbunden mit",
       "wifiNotConnected": "WLAN nicht verbunden",
       "tokenConfigured": "Claude-Token eingerichtet",
-      "tokenNotConfigured": "Claude-Token nicht eingerichtet"
+      "tokenNotConfigured": "Claude-Token nicht eingerichtet",
+      "reboot": "Neu starten",
+      "restarting": "Gerät startet neu …",
+      "dangerZone": "Gefahrenzone",
+      "factoryResetHint": "Setzt das Gerät auf den Stand des ersten Tages zurück. Die Firmware bleibt.",
+      "factoryReset": "Auf Werkseinstellungen zurücksetzen",
+      "factoryResetTitle": "Alles vergessen?",
+      "factoryResetText": "Das Gerät vergisst danach alles und startet neu. Das lässt sich nicht rückgängig machen:",
+      "factoryResetConfirm": "Ja, alles vergessen",
+      "forgets": {
+        "wifi": "WLAN-Zugangsdaten",
+        "token": "Claude-Token und die gespeicherten Verbrauchswerte",
+        "timezone": "Zeitzone",
+        "settings": "Helligkeit, Ausrichtung und Abfrage-Intervalle",
+        "stats": "Statistik"
+      }
     },
     "timezone": {
       "title": "Zeitzone",
@@ -124,6 +139,19 @@
       "rotation": "Wo kommt das USB-Kabel raus?",
       "usb_left": "USB links",
       "usb_right": "USB rechts"
+    },
+    "stats": {
+      "title": "Statistik",
+      "noDevice": "Verbinde dein Gerät, um die Statistik zu sehen.",
+      "intro": "Was die eigenen Anfragen des Geräts an Claude verbraucht haben.",
+      "requests": "Anfragen",
+      "tokens": "Tokens",
+      "since": "Seit {date}",
+      "sinceUnknown": "Seit: unbekannt (das Gerät kannte die Uhrzeit noch nicht)",
+      "reset": "Statistik zurücksetzen",
+      "confirm": "Wirklich auf 0 setzen?",
+      "confirmYes": "Ja, zurücksetzen",
+      "confirmNo": "Abbrechen"
     }
   },
   "nav": {
@@ -208,6 +236,18 @@
       "waitingWifi": "Warte auf WLAN …",
       "loading": "Lädt …"
     },
-    "toSettings": "Zu den Einstellungen"
+    "toSettings": "Zu den Einstellungen",
+    "stats": "Gerät: {requests} Anfragen · {tokens} Tokens",
+    "statsHint": "Was die eigenen Anfragen des Geräts verbraucht haben. Details und Zurücksetzen in den Einstellungen.",
+    "forecast": {
+      "on_track": "Im Plan",
+      "tight": "Knapp",
+      "too_fast": "Zu schnell",
+      "too_fast_at": "Zu schnell · Limit {when}"
+    },
+    "forecastHint": "Prognose des Geräts: Wo endet das Fenster, wenn es im bisherigen Tempo weitergeht?"
+  },
+  "dialog": {
+    "cancel": "Abbrechen"
   }
 }
