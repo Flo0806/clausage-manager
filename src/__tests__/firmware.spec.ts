@@ -121,3 +121,31 @@ describe('reading the manifest', () => {
     logged.mockRestore()
   })
 })
+
+describe('full image check before installing', () => {
+  // Bootloader header: 0xE9, chip id at byte 12 (9 = ESP32-S3)
+  function fullImage(chipId: number) {
+    const image = new Uint8Array(1024)
+    image[0] = 0xe9
+    image[12] = chipId
+    return image
+  }
+  const expectedFor = (image: Uint8Array) => ({
+    size: image.length,
+    sha256: createHash('sha256').update(image).digest('hex'),
+  })
+
+  it('accepts a full image built for the ESP32-S3', async () => {
+    const { verifyFullImage } = await import('@/composables/firmwareInstall.ts')
+    const image = fullImage(9)
+    await expect(verifyFullImage(image, expectedFor(image))).resolves.toBeUndefined()
+  })
+
+  it('rejects an image for another chip, even with a matching checksum', async () => {
+    const { verifyFullImage } = await import('@/composables/firmwareInstall.ts')
+    const image = fullImage(0) // 0 = the original ESP32
+    await expect(verifyFullImage(image, expectedFor(image))).rejects.toMatchObject({
+      code: 'notImage',
+    })
+  })
+})

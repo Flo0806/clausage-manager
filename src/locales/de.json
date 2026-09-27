@@ -97,7 +97,14 @@
         "timezone": "Zeitzone",
         "settings": "Helligkeit, Ausrichtung und Abfrage-Intervalle",
         "stats": "Statistik"
-      }
+      },
+      "blankTitle": "Kein Clausage gefunden",
+      "blankText": "Das Gerät ist verbunden, aber es antwortet keine Clausage-Firmware. Das ist bei einem neuen Board normal, oder wenn eine andere Firmware darauf läuft.",
+      "install": "Clausage {version} installieren",
+      "installLoading": "Firmware-Liste wird geladen …",
+      "installTitle": "Clausage installieren?",
+      "installText": "Alles, was auf dem Board ist, wird überschrieben: die vorhandene Firmware und alle Einstellungen. Das ist gewollt, wenn du ein neues Board zum Clausage machst.",
+      "installConfirm": "Ja, installieren"
     },
     "timezone": {
       "title": "Zeitzone",
@@ -270,5 +277,40 @@
   },
   "language": {
     "switch": "Sprache: {current}. Wechseln zu {next}"
+  },
+  "install": {
+    "title": "Clausage installieren",
+    "doNotUnplug": "Installation läuft. Gerät bitte nicht abstecken und diesen Tab nicht schließen.",
+    "retry": "Erneut versuchen",
+    "close": "Schließen",
+    "success": "Fertig! Dein Clausage läuft mit {version}. Richte jetzt WLAN und Claude ein.",
+    "step": {
+      "download": "Firmware herunterladen",
+      "verify": "Datei prüfen",
+      "bootloader": "Board in den Flash-Modus bringen und prüfen",
+      "write": "Firmware schreiben",
+      "restart": "Gerät startet neu",
+      "check": "Clausage prüfen"
+    },
+    "manual": {
+      "hold": "Halte die BOOT-Taste gedrückt.",
+      "reset": "Drücke kurz die RESET-Taste.",
+      "release": "Lass BOOT los.",
+      "retry": "Klicke auf „Erneut versuchen“."
+    },
+    "error": {
+      "noDevice": "Kein Board zum Installieren verbunden.",
+      "noFirmware": "Es gibt keine Firmware zum Installieren.",
+      "download": "Die Firmware konnte nicht heruntergeladen werden.",
+      "size": "Die heruntergeladene Datei hat die falsche Größe. Nichts wurde geschrieben.",
+      "hash": "Die heruntergeladene Datei ist beschädigt (Prüfsumme falsch). Nichts wurde geschrieben.",
+      "notImage": "Die Datei ist kein Komplett-Image für den ESP32-S3. Nichts wurde geschrieben.",
+      "bootloader": "Das Board ist nicht in den Flash-Modus gewechselt. Bring es von Hand hinein:",
+      "wrongChip": "Das ist kein ESP32-S3. Clausage läuft nur auf dem ESP32-S3, nichts wurde geschrieben.",
+      "wrongFlash": "Das Board hat nicht 16 MB Flash. Nichts wurde geschrieben.",
+      "write": "Beim Schreiben ist ein Fehler aufgetreten. Versuch es erneut, das Board lässt sich jederzeit neu bespielen.",
+      "notBack": "Die Firmware ist geschrieben, aber das Gerät meldet sich nicht. Drück einmal RESET, es verbindet sich dann von selbst.",
+      "version": "Das Gerät meldet eine andere Version als erwartet."
+    }
   }
 }

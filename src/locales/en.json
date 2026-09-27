@@ -97,7 +97,14 @@
         "timezone": "Time zone",
         "settings": "Brightness, orientation and polling intervals",
         "stats": "Statistics"
-      }
+      },
+      "blankTitle": "No Clausage found",
+      "blankText": "The device is connected, but no Clausage firmware answers. That's normal for a new board, or when another firmware runs on it.",
+      "install": "Install Clausage {version}",
+      "installLoading": "Loading firmware list …",
+      "installTitle": "Install Clausage?",
+      "installText": "Everything on the board gets overwritten: the firmware on it and all settings. That's what you want when turning a new board into a Clausage.",
+      "installConfirm": "Yes, install"
     },
     "timezone": {
       "title": "Time zone",
@@ -270,5 +277,40 @@
   },
   "language": {
     "switch": "Language: {current}. Switch to {next}"
+  },
+  "install": {
+    "title": "Install Clausage",
+    "doNotUnplug": "Installing. Please don't unplug the device and don't close this tab.",
+    "retry": "Try again",
+    "close": "Close",
+    "success": "Done! Your Clausage runs {version}. Now set up Wi-Fi and Claude.",
+    "step": {
+      "download": "Download firmware",
+      "verify": "Check file",
+      "bootloader": "Put the board into flash mode and check it",
+      "write": "Write firmware",
+      "restart": "Device restarts",
+      "check": "Check Clausage"
+    },
+    "manual": {
+      "hold": "Hold the BOOT button.",
+      "reset": "Press RESET briefly.",
+      "release": "Let go of BOOT.",
+      "retry": "Click \"Try again\"."
+    },
+    "error": {
+      "noDevice": "No board connected to install on.",
+      "noFirmware": "There is no firmware to install.",
+      "download": "Could not download the firmware.",
+      "size": "The downloaded file has the wrong size. Nothing was written.",
+      "hash": "The downloaded file is damaged (checksum mismatch). Nothing was written.",
+      "notImage": "The file is not a full image for the ESP32-S3. Nothing was written.",
+      "bootloader": "The board did not enter flash mode. Put it there by hand:",
+      "wrongChip": "This is not an ESP32-S3. Clausage only runs on the ESP32-S3, nothing was written.",
+      "wrongFlash": "The board doesn't have 16 MB flash. Nothing was written.",
+      "write": "Writing failed. Try again, the board can always be written again.",
+      "notBack": "The firmware is written, but the device doesn't answer. Press RESET once, it connects by itself then.",
+      "version": "The device reports a different version than expected."
+    }
   }
 }

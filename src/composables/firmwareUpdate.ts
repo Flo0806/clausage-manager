@@ -60,7 +60,12 @@ export class UpdateFailure extends Error {
   }
 }
 
-async function download(url: string, expectedSize: number) {
+// Also used by the installer; onProgress gets 0..1
+export async function download(
+  url: string,
+  expectedSize: number,
+  onProgress: (done: number) => void,
+) {
   const response = await fetch(url, { cache: 'no-cache' })
   if (!response.ok || !response.body) throw new UpdateFailure('download', `HTTP ${response.status}`)
 
@@ -73,7 +78,7 @@ async function download(url: string, expectedSize: number) {
     if (done) break
     parts.push(value)
     received += value.length
-    progress.value = Math.min(received / expectedSize, 1)
+    onProgress(Math.min(received / expectedSize, 1))
   }
 
   const image = new Uint8Array(received)
@@ -85,12 +90,16 @@ async function download(url: string, expectedSize: number) {
   return image
 }
 
+export async function sha256Hex(data: Uint8Array<ArrayBuffer>) {
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', data))
+  return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 // Everything is checked before a single byte goes to the device
 export async function verify(image: Uint8Array<ArrayBuffer>, expected: FirmwareRelease) {
   if (image.length !== expected.size) throw new UpdateFailure('size')
 
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', image))
-  const hash = Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('')
+  const hash = await sha256Hex(image)
   if (hash !== expected.sha256.toLowerCase()) throw new UpdateFailure('hash')
 
   // ESP image: first byte 0xE9; esp_app_desc_t at byte 32 starts with 0xABCD5432 (little endian)
@@ -126,7 +135,11 @@ export function useFirmwareUpdate() {
       if (info.value.board !== target.board) throw new UpdateFailure('wrongBoard')
 
       phase.value = 'download'
-      const image = await download(target.url, target.size).catch((e) => {
+      const image = await download(
+        target.url,
+        target.size,
+        (done) => (progress.value = done),
+      ).catch((e) => {
         throw e instanceof UpdateFailure ? e : new UpdateFailure('download', String(e))
       })
 

@@ -11,6 +11,8 @@ interface ManifestEntry {
   sha256: string
   released: string // YYYY-MM-DD
   notes?: readonly string[] // changelog, one line per change; older entries have none
+  // Full image for new boards (bootloader, partitions, app), written at address 0
+  install?: { file: string; size: number; sha256: string }
 }
 
 interface Manifest {
@@ -20,6 +22,7 @@ interface Manifest {
 export interface FirmwareRelease extends ManifestEntry {
   board: string
   url: string // absolute download URL of the .bin
+  installUrl?: string // absolute download URL of the full image
 }
 
 // Loaded once for the whole app
@@ -49,7 +52,12 @@ async function load() {
 
     releases.value = Object.entries(manifest.boards)
       .flatMap(([board, entries]) =>
-        [entries].flat().map((entry) => ({ ...entry, board, url: REPO_URL + entry.file })),
+        [entries].flat().map((entry) => ({
+          ...entry,
+          board,
+          url: REPO_URL + entry.file,
+          installUrl: entry.install && REPO_URL + entry.install.file,
+        })),
       )
       .sort((a, b) => compareVersions(b.version, a.version) || b.released.localeCompare(a.released))
     loaded.value = true
@@ -67,6 +75,11 @@ export function useFirmware() {
     if (!loaded.value && !loading.value) void load()
   }
 
+  // Newest release that has a full image, for installing on a new board
+  function installable() {
+    return releases.value.find((r) => r.install)
+  }
+
   function findRelease(board: string, version: string) {
     return releases.value.find((r) => r.board === board && r.version === version)
   }
@@ -78,6 +91,7 @@ export function useFirmware() {
     ensureLoaded,
     reload: load,
     findRelease,
+    installable,
   }
 }
 

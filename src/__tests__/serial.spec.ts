@@ -39,7 +39,12 @@ describe('serial protocol', () => {
       await vi.advanceTimersByTimeAsync(10 * 500 + 100) // 10 attempts, 500 ms each
       expect(await result).toBe(false)
       expect(api.connected.value).toBe(false)
+      // The port works but no Clausage answers: a board to install on
+      expect(api.blank.value).toBe(true)
       expect(logged).toHaveBeenCalledWith(expect.stringContaining('No answer from the device'))
+
+      await api.forgetDevice()
+      expect(api.blank.value).toBe(false)
     } finally {
       vi.useRealTimers()
       logged.mockRestore()

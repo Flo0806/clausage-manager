@@ -9,6 +9,9 @@ let port: SerialPort | undefined // native object, deliberately not reactive (a 
 let nextId = 1 // never reset, so a late reply from an old request can't match a new one
 const connected = ref(false)
 const paired = ref(false) // the browser remembers a device this page may open without asking
+// A port that opened fine but no Clausage answered: a new board (or a broken install) to install on
+let blankPort: SerialPort | undefined
+const blank = ref(false)
 const deviceVersion = ref<string>() // firmware version reported in the handshake
 
 // Reading: a loop runs in the background and hands every complete line to the handlers
@@ -193,9 +196,10 @@ async function refreshPaired() {
   paired.value = supported && (await navigator.serial.getPorts()).length > 0
 }
 
-// Opens `p` and runs the handshake. Returns false if the device did not answer.
-async function openPort(p: SerialPort, { forgetOnNoAnswer = false } = {}) {
-  if (connected.value || opening) return false
+// Opens `p` and runs the handshake. Returns false if the device did not answer or the port is busy.
+async function openPort(p: SerialPort) {
+  // During an update or install the port belongs to that, not to auto-connect
+  if (connected.value || opening || updating.value) return false
   opening = true
   try {
     port = p
@@ -216,13 +220,16 @@ async function openPort(p: SerialPort, { forgetOnNoAnswer = false } = {}) {
     }
     if (!ready?.ok) {
       await closePort()
-      // A freshly picked device that never answers is not a Clausage: don't keep it paired
-      if (forgetOnNoAnswer) await p.forget?.()
+      // The port works, the firmware doesn't answer: offer to install Clausage on it
+      blankPort = p
+      blank.value = true
       console.error('[serial] No answer from the device. Is the Clausage firmware running?')
       return false
     }
 
     deviceVersion.value = ready.version
+    blankPort = undefined
+    blank.value = false
     connected.value = true
     return true
   } catch (e) {
@@ -267,7 +274,7 @@ export function useSerial() {
     } catch {
       return undefined // dialog closed without picking a device
     }
-    return openPort(picked, { forgetOnNoAnswer: true })
+    return openPort(picked)
   }
 
   async function disconnect() {
@@ -279,7 +286,22 @@ export function useSerial() {
   async function forgetDevice() {
     await closePort()
     for (const known of await navigator.serial.getPorts()) await known.forget?.()
+    blankPort = undefined
+    blank.value = false
     await refreshPaired()
+  }
+
+  // Hands the blank port to the installer (esptool-js) and keeps everything else off it
+  // until endInstall(). Our own connection must be closed, esptool needs the port alone.
+  async function beginInstall() {
+    if (!blankPort || updating.value) return undefined
+    updating.value = true
+    await closePort()
+    return blankPort
+  }
+
+  function endInstall() {
+    updating.value = false
   }
 
   async function changeDevice() {
@@ -356,6 +378,7 @@ export function useSerial() {
   return {
     connected: readonly(connected),
     updating: readonly(updating),
+    blank: readonly(blank),
     paired: readonly(paired),
     deviceVersion: readonly(deviceVersion),
     connect,
@@ -368,5 +391,7 @@ export function useSerial() {
     changeDevice,
     flashFirmware,
     reconnect,
+    beginInstall,
+    endInstall,
   }
 }

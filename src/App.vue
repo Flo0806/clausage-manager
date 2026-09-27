@@ -3,6 +3,7 @@ import { watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TheHeader from './components/layout/TheHeader.vue'
 import FirmwareUpdateDialog from './components/update/FirmwareUpdateDialog.vue'
+import FirmwareInstallDialog from './components/update/FirmwareInstallDialog.vue'
 import DebugPanel from './components/layout/DebugPanel.vue'
 
 const { t, locale } = useI18n()
@@ -18,5 +19,6 @@ watchEffect(() => {
     <RouterView />
   </main>
   <FirmwareUpdateDialog />
+  <FirmwareInstallDialog />
   <DebugPanel />
 </template>
