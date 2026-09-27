@@ -10,6 +10,7 @@ interface ManifestEntry {
   size: number
   sha256: string
   released: string // YYYY-MM-DD
+  notes?: readonly string[] // changelog, one line per change; older entries have none
 }
 
 interface Manifest {

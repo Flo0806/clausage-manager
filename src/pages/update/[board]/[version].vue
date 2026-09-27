@@ -27,6 +27,19 @@
         <FirmwareFacts :release="release" />
       </BaseCard>
 
+      <BaseCard v-if="release.notes?.length">
+        <h2 class="text-2xl font-bold">{{ $t('update.notes') }}</h2>
+        <ul class="flex flex-col gap-1.5">
+          <li v-for="note in release.notes" :key="note" class="flex items-start gap-2">
+            <span
+              class="i-lucide-dot mt-0.5 inline-block shrink-0 text-primary"
+              aria-hidden="true"
+            />
+            {{ note }}
+          </li>
+        </ul>
+      </BaseCard>
+
       <BaseCard>
         <h2 class="text-2xl font-bold">{{ $t('update.startTitle') }}</h2>
 

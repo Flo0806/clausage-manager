@@ -180,7 +180,8 @@
     "fromTo": "Dein Gerät wird von {from} auf {to} aktualisiert.",
     "noDevice": "Kein Gerät verbunden. Verbinde deinen Clausage, um das Update zu starten.",
     "start": "Update starten",
-    "wrongBoard": "Diese Firmware ist für {board}, dein Gerät ist ein {device}. Das Update ist gesperrt."
+    "wrongBoard": "Diese Firmware ist für {board}, dein Gerät ist ein {device}. Das Update ist gesperrt.",
+    "notes": "Was ist neu"
   },
   "updateRun": {
     "title": "Firmware-Update",

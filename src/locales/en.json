@@ -180,7 +180,8 @@
     "fromTo": "Your device will be updated from {from} to {to}.",
     "noDevice": "No device connected. Connect your Clausage to start the update.",
     "start": "Start update",
-    "wrongBoard": "This firmware is for {board}, your device is a {device}. The update is blocked."
+    "wrongBoard": "This firmware is for {board}, your device is a {device}. The update is blocked.",
+    "notes": "What's new"
   },
   "updateRun": {
     "title": "Firmware update",
