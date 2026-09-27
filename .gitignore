@@ -37,3 +37,6 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Local secrets (GH_TOKEN for scripts/release.sh)
+.env
