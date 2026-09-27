@@ -26,6 +26,7 @@
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
+    "@iconify-json/circle-flags": "^1.2.11",
     "@iconify-json/lucide": "^1.2.136",
     "@iconify-json/simple-icons": "^1.2.97",
     "@tsconfig/node24": "^24.0.5",

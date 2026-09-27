@@ -267,5 +267,8 @@
     "expand": "Expand",
     "empty": "Nothing received yet. Everything going between app and device shows up here.",
     "copyLine": "Click to copy this line"
+  },
+  "language": {
+    "switch": "Language: {current}. Switch to {next}"
   }
 }

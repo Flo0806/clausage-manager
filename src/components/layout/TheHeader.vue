@@ -14,6 +14,7 @@
       <h1 class="text-xl">Clausage Manager</h1>
     </div>
     <div class="flex items-center gap-2">
+      <LanguageSwitch />
       <button
         type="button"
         class="btn-ghost relative px-2"
@@ -49,6 +50,7 @@
 import { ref } from 'vue'
 import { cycleTheme, themeMode } from '@/composables/theme'
 import { useDebugLog } from '@/composables/debugLog.ts'
+import LanguageSwitch from './LanguageSwitch.vue'
 import TheSidebar from './TheSidebar.vue'
 
 const icons = { auto: 'i-lucide-monitor', light: 'i-lucide-sun', dark: 'i-lucide-moon' } as const

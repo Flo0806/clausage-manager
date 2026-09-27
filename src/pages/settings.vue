@@ -1,7 +1,8 @@
 <template>
   <div>
     <h1 class="text-3xl font-semibold flex items-center mb-6">
-      <span class="i-lucide-settings inline-block"></span> <span>&nbsp;Settings</span>
+      <span class="i-lucide-settings inline-block" aria-hidden="true"></span>
+      <span>&nbsp;{{ $t('nav.settings') }}</span>
     </h1>
     <div class="space-y-8">
       <DeviceSettings />

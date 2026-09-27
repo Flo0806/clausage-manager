@@ -267,5 +267,8 @@
     "expand": "Aufklappen",
     "empty": "Noch nichts empfangen. Alles, was zwischen App und Gerät hin und her geht, erscheint hier.",
     "copyLine": "Klicken, um diese Zeile zu kopieren"
+  },
+  "language": {
+    "switch": "Sprache: {current}. Wechseln zu {next}"
   }
 }
