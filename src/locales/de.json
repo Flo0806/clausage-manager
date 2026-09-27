@@ -250,5 +250,22 @@
   },
   "dialog": {
     "cancel": "Abbrechen"
+  },
+  "debug": {
+    "title": "Debug",
+    "on": "Debug-Log einschalten",
+    "off": "Debug-Log ausschalten",
+    "filter": "Filter",
+    "filterAll": "Alles",
+    "filterJson": "Nur JSON",
+    "filterLog": "Nur Geräte-Log",
+    "autoScroll": "Automatisch mitscrollen",
+    "copy": "Kopieren",
+    "save": "Als .txt speichern",
+    "clear": "Leeren",
+    "minimize": "Minimieren",
+    "expand": "Aufklappen",
+    "empty": "Noch nichts empfangen. Alles, was zwischen App und Gerät hin und her geht, erscheint hier.",
+    "copyLine": "Klicken, um diese Zeile zu kopieren"
   }
 }

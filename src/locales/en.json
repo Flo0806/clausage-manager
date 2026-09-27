@@ -250,5 +250,22 @@
   },
   "dialog": {
     "cancel": "Cancel"
+  },
+  "debug": {
+    "title": "Debug",
+    "on": "Turn debug log on",
+    "off": "Turn debug log off",
+    "filter": "Filter",
+    "filterAll": "All",
+    "filterJson": "JSON only",
+    "filterLog": "Device log only",
+    "autoScroll": "Follow new lines",
+    "copy": "Copy",
+    "save": "Save as .txt",
+    "clear": "Clear",
+    "minimize": "Minimize",
+    "expand": "Expand",
+    "empty": "Nothing received yet. Everything going between app and device shows up here.",
+    "copyLine": "Click to copy this line"
   }
 }

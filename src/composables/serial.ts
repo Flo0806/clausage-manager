@@ -1,5 +1,5 @@
 import { readonly, ref } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
+import { recordLine } from './debugLog.ts'
 
 const BAUD_RATE = 115200 // must match the ESP32 (same rate as its logs)
 
@@ -8,9 +8,6 @@ const BAUD_RATE = 115200 // must match the ESP32 (same rate as its logs)
 let port: SerialPort | undefined // native object, deliberately not reactive (a Proxy breaks it)
 let nextId = 1 // never reset, so a late reply from an old request can't match a new one
 const connected = ref(false)
-// Logs every line from the device to the console. Stored, so it survives a reload.
-// Console: localStorage.setItem('serial-debug', 'true'), then reload
-const debug = useLocalStorage('serial-debug', false)
 const paired = ref(false) // the browser remembers a device this page may open without asking
 const deviceVersion = ref<string>() // firmware version reported in the handshake
 
@@ -34,7 +31,7 @@ async function readLoop(p: SerialPort) {
         const lines = pending.split(/\r?\n/)
         pending = lines.pop() ?? '' // the last part is not complete yet
         lines.forEach((line) => {
-          if (debug.value) console.log('[esp]', line)
+          recordLine('in', line)
           lineHandlers.forEach((handle) => handle(line))
         })
       }
@@ -108,8 +105,10 @@ async function writeBytes(bytes: Uint8Array) {
   }
 }
 
+// Firmware bytes during an update go through writeBytes() directly and are not logged
 async function send(text: string) {
   if (!port?.writable) return
+  recordLine('out', text)
   await writeBytes(new TextEncoder().encode(text + '\n')) // '\n' ends a line on the ESP32
 }
 
@@ -357,7 +356,6 @@ export function useSerial() {
   return {
     connected: readonly(connected),
     updating: readonly(updating),
-    debug,
     paired: readonly(paired),
     deviceVersion: readonly(deviceVersion),
     connect,
