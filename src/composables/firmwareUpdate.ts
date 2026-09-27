@@ -51,7 +51,7 @@ watch(running, (isRunning) => {
   else window.removeEventListener('beforeunload', warnBeforeUnload)
 })
 
-class UpdateFailure extends Error {
+export class UpdateFailure extends Error {
   constructor(
     public code: UpdateError,
     public detail?: string,
@@ -86,7 +86,7 @@ async function download(url: string, expectedSize: number) {
 }
 
 // Everything is checked before a single byte goes to the device
-async function verify(image: Uint8Array<ArrayBuffer>, expected: FirmwareRelease) {
+export async function verify(image: Uint8Array<ArrayBuffer>, expected: FirmwareRelease) {
   if (image.length !== expected.size) throw new UpdateFailure('size')
 
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', image))
