@@ -3,7 +3,6 @@ import './assets/fonts/geist.css'
 import '@fontsource-variable/geist-mono'
 import 'virtual:uno.css'
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 
@@ -17,7 +16,6 @@ const router = createRouter({
   routes,
 })
 
-app.use(createPinia())
 app.use(router)
 app.use(i18n)
 

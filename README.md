@@ -1,54 +1,96 @@
-# clausage-manager
+<p align="center">
+  <img src="public/logo.svg" alt="Clausage logo" width="120" height="120">
+</p>
 
-This template should help get you started developing with Vue 3 in Vite.
+<h1 align="center">Clausage Manager</h1>
 
-## Recommended IDE Setup
+<p align="center">
+  The web app for <b>Clausage</b>, a small desk display that shows your Claude usage limits.<br>
+  Set it up, watch your usage and install firmware updates, all from the browser over USB.
+</p>
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+![The usage dashboard](docs/screenshots/home.png)
 
-## Recommended Browser Setup
+## What it does
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- **Usage at a glance:** the 5-hour window and the weekly limit as bars, with the time until they reset
+  and a forecast whether you will run out before that ("On track", "Tight", "Too fast").
+- **Set up the device:** Wi-Fi, Claude token, time zone, brightness, screen orientation and how often
+  the device asks Claude. Wi-Fi, token and usage update live, also when something changes on the
+  device itself (a QR code scanned, the router gone).
+- **Firmware updates in the browser:** pick a version, the app downloads it, checks size, checksum
+  and version, and flashes it over USB. If the new firmware doesn't start, the device rolls back on its own.
+- **Debug log:** a floating panel shows every line between app and device, including the device's own
+  logs. Handy while the web app holds the serial port and `idf monitor` can't.
+- **Light and dark mode, English and German.**
 
-## Type Support for `.vue` Imports in TS
+| Settings | Firmware update | Debug log |
+|---|---|---|
+| ![Settings](docs/screenshots/settings.png) | ![Firmware update](docs/screenshots/update.png) | ![Debug log](docs/screenshots/debug.png) |
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## Requirements
 
-## Customize configuration
+The app talks to the device with [Web Serial](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
+which only desktop browsers offer:
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+| Browser | Since version |
+|---|---|
+| Chrome, Edge | 89 |
+| Firefox | 151 |
 
-## Project Setup
+Phones and tablets are not supported. The device is a Waveshare ESP32-S3-Touch-LCD-2 running the
+Clausage firmware.
 
-```sh
+## How it works
+
+- **One JSON object per line** in both directions. Commands carry an `id`, the device answers with the
+  same `id`. Messages the device sends on its own (`wifi`, `token`, `usage`, ...) carry an `event`.
+  Everything else on the line is the device's log.
+- **Pairing is the browser's:** once you picked the device, the app reconnects on its own after a
+  reload or when you plug it in. "Forget device" removes the pairing again.
+- **Firmware** comes from [clausage-firmware](https://github.com/Flo0806/clausage-firmware):
+  a `manifest.json` lists every release with size, SHA-256 and release notes.
+- **Your token never leaves the device again:** the app sends it once, the device never sends it back,
+  and the debug log masks it.
+
+## Development
+
+```bash
 pnpm install
+pnpm dev          # dev server
+pnpm test         # unit tests
+pnpm lint         # oxlint + ESLint
+pnpm build        # type check + production build
 ```
 
-### Compile and Hot-Reload for Development
+Built with Vue 3, Vite, UnoCSS, vue-router (file based routes in `src/pages`), vue-i18n and VueUse.
 
-```sh
-pnpm dev
+```
+src/
+  composables/   serial.ts (port, protocol), device.ts (device state and commands),
+                 firmware*.ts (releases, update), debugLog.ts
+  components/    home/, settings/, update/, layout/, ui/
+  pages/         index.vue, settings.vue, update/
+  locales/       en.json, de.json
 ```
 
-### Type-Check, Compile and Minify for Production
+The serial protocol is tested against a simulated device (`src/__tests__/fakeDevice.ts`), so the update
+flow can be checked without a board on the desk.
 
-```sh
-pnpm build
+## Troubleshooting
+
+**Chrome says "The device has been lost" right after connecting?** Tools based on pyserial
+(`idf monitor`, `esptool`) leave the port in a state Chrome can't read. Reset it once:
+
+```bash
+stty -F /dev/ttyACM0 min 1
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+**"Could not connect"?** Another program probably holds the port. Close `idf monitor` or any other
+serial terminal and try again.
 
-```sh
-pnpm test:unit
-```
+## License
 
-### Lint with [ESLint](https://eslint.org/)
+[MIT](LICENSE)
 
-```sh
-pnpm lint
-```
+Clausage is a personal project and not affiliated with Anthropic. Claude is a trademark of Anthropic.
